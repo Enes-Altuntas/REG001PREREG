@@ -2,6 +2,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import *
+from user.models import UserModel
+
 
 @api_view(['POST'])
 def mainService(request):
@@ -23,13 +25,33 @@ def mainService(request):
     else:
         return Response({"errId": 1, "errMessage": baseSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+
 def serviceOne(request):
     serviceOneSerializer = ServiceOneSerializer(data=request.data)
-
     if serviceOneSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceOneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
-    return None
+    else:
+        dbModel = UserModel.objects.get()
+        if dbModel.userMail == serviceOneSerializer.data["userMail"] and dbModel.userStatus >= 4:
+            return Response({"errId": 3, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif dbModel.userMail == serviceOneSerializer.data["userMail"] and dbModel.userStatus < 4:
+            return Response({"errId": 4, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Country Table
+        elif dbModel.userCountryCode != serviceOneSerializer.data["userCountryCode"]:
+            return Response({"errId": 5, "errMessage": "Country code already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        elif request.data["UserPresenterId"] != dbModel.userPresenterId:
+            dbModel.userPresenterId = request.data["UserPresenterId"]
+        elif request.data["UserPresenterId"] == dbModel.userPresenterId:
+            dbModel.userPresenterId = request.data["UserPresenterId"]
+            return Response({"errId": 6, "errMessage": "Presenter id already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            dbModel.save()
+            return Response({"Success"}, status=status.HTTP_200_OK)
+        except:
+            return Response({"errId": 8, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 def serviceTwo(request):
     serviceTwoSerializer = ServiceTwoSerializer(data=request.data)
@@ -39,6 +61,7 @@ def serviceTwo(request):
 
     return None
 
+
 def serviceThree(request):
     serviceThreeSerializer = ServiceThreeSerializer(data=request.data)
 
@@ -46,6 +69,7 @@ def serviceThree(request):
         return Response({"errId": 1, "errMessage": serviceThreeSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     return None
+
 
 def serviceFour(request):
     serviceFourSerializer = ServiceFourSerializer(data=request.data)
@@ -55,6 +79,7 @@ def serviceFour(request):
 
     return None
 
+
 def serviceFive(request):
     serviceFiveSerializer = ServiceFiveSerializer(data=request.data)
 
@@ -62,6 +87,7 @@ def serviceFive(request):
         return Response({"errId": 1, "errMessage": serviceFiveSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     return None
+
 
 def serviceSix(request):
     serviceSixSerializer = ServiceSixSerializer(data=request.data)
