@@ -16,10 +16,12 @@ class UserModel(models.Model):
     acceptPrivacy = models.CharField(max_length=1,blank=True,default='N')
     acceptStatistics = models.CharField(max_length=1,blank=True,default='N')
     promoCode = models.CharField(max_length=10,blank=True,default='N')
+    userProg = models.IntegerField(default=0,blank=True,null=True)
+    userID = models.IntegerField(default=0,blank=True,null=True)
     
 
     def __str__(self):
-        return self.userName + ' ' + self.name + ' ' + self.surname
+        return str(self.userName)
 
 
 class CountryModel(models.Model):
@@ -33,5 +35,6 @@ class UserApp(models.Model):
     appID = models.IntegerField()
     userStatus = models.IntegerField()
     
-    def __str__(self) -> str:
-        return self.appID + " " + self.userStatus
+    #return integer
+    def __str__(self) -> int:
+        return  str(self.appID)

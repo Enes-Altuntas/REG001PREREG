@@ -43,7 +43,7 @@ class ServiceFiveSerializer(serializers.Serializer):
     regAcceptTermsCondition = serializers.CharField(max_length=1)
     regAcceptPrivacy = serializers.CharField(max_length=1)
     regAcceptStatistics = serializers.CharField(max_length=1)
-    appCode = serializers.CharField(max_length=3)
+    appID = serializers.CharField(max_length=3)
     appAcceptTermsCondition = serializers.CharField(required=False, max_length=1)
     appAcceptPrivacy = serializers.CharField(required=False, max_length=1)
     appAcceptStatistics = serializers.CharField(required=False, max_length=1)
