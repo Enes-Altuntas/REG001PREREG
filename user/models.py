@@ -27,3 +27,11 @@ class CountryModel(models.Model):
     
     def __str__(self) -> str:
         return self.value
+    
+class UserApp(models.Model):
+    userProg = models.IntegerField()
+    appID = models.IntegerField()
+    userStatus = models.IntegerField()
+    
+    def __str__(self) -> str:
+        return self.appID + " " + self.userStatus
