@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import *
 from user.models import UserModel ,CountryModel,UserApp
-from user import serializers
+from user.serializers import CountryCodeSerializer,UserSerializer,UserAppSerializer
 
 
 @api_view(['POST'])
@@ -29,24 +29,28 @@ def mainService(request):
 
 def serviceOne(request):
     serviceOneSerializer = ServiceOneSerializer(data=request.data)
-    dbModel_CountryCode = CountryModel.objects.get(countryCode=serviceOneSerializer.data["value"])
-    dbModel = UserModel.objects.get(userMail=serviceOneSerializer.data["userMail"])
+    
     if serviceOneSerializer.is_valid() == False:
-        return Response({"errId": 2, "errMessage": serviceOneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)    
+        return Response({"errId": 2, "errMessage": serviceOneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    dbModel_CountryCode = CountryModel.objects.get(value=serviceOneSerializer.data["userCountryCode"])
+    try:
+        dbModel = UserModel.objects.get()
+    except:
+        return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)   
     if dbModel.userMail == serviceOneSerializer.data["userMail"]:
         if dbModel.userStatus >= 4:
             return Response({"errId": 3, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
         elif dbModel.userStatus < 4:
             return Response({"errId": 4, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)            
-    if dbModel_CountryCode.userCountryCode != serviceOneSerializer.data["userCountryCode"]:
+    if dbModel_CountryCode.value != serviceOneSerializer.data["userCountryCode"]:
         return Response({"errId": 5, "errMessage": "Country code already exists"}, status=status.HTTP_400_BAD_REQUEST)
     
-    if dbModel.userPresenterId is not None:
+    if dbModel.userPresenterId is not 0:
         if serviceOneSerializer.data["userPresenterId"] != dbModel.userPresenterId:
             return Response({"errId": 6, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        countryCodeSerializer = serializers.CountryModelSerializer(data=request.data)
-        userSerializer = serializers.UserSerializer(data=request.data)
+        countryCodeSerializer = CountryCodeSerializer(data=request.data)
+        userSerializer = UserSerializer(data=request.data)
         if userSerializer.is_valid() and countryCodeSerializer.is_valid():
             countryCodeSerializer.save()
             userSerializer.save()
@@ -61,16 +65,15 @@ def serviceOne(request):
 
 def serviceTwo(request):
     serviceTwoSerializer = ServiceTwoSerializer(data=request.data)
-    dbModel = UserModel.objects.get(userMail = serviceTwoSerializer.data["userMail"])
     if serviceTwoSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceTwoSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    if dbModel.userMail != serviceTwoSerializer.data["userMail"]:
-        return Response({"errId": 9, "errMessage": "Incorrect Mail"}, status=status.HTTP_400_BAD_REQUEST)
-        
+    try:
+        dbModel = UserModel.objects.get(userMail = serviceTwoSerializer.data["userMail"])
+    except:
+        return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)     
         #ANOTHER SERVICE
     if REG008SENDVERCODE(serviceTwoSerializer.data) is False:
-            return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
-               
+            return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)              
     try:
         #dbModel.objects.get(UserModel.userStatus == 2)
         dbModel.userStatus = 2
@@ -82,37 +85,38 @@ def serviceTwo(request):
 
 def serviceThree(request):
     serviceThreeSerializer = ServiceThreeSerializer(data=request.data)
-    dbModel = UserModel.objects.get(userMail = serviceThreeSerializer.data["userMail"])
     if serviceThreeSerializer.is_valid() == False:
         return Response({"errId": 1, "errMessage": serviceThreeSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        dbModel = UserModel.objects.get(userMail = serviceThreeSerializer.data["userMail"])
+    except:
+        return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST) 
+    if dbModel.userMail != serviceThreeSerializer.data["userMail"]:
+        return Response({"errId": 2, "errMessage": serviceThreeSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        dbModel.userStatus = 3
+        dbModel.name = serviceThreeSerializer.data["name"]
+        dbModel.surname = serviceThreeSerializer.data["surname"]
+        dbModel.phoneNumber =  serviceThreeSerializer.data["phoneNumber"]
+        dbModel.phonePrefix =   serviceThreeSerializer.data["phonePrefix"]
+        dbModel.save()               
+    except:
+        return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if REG007SENDVERCODE(serviceThreeSerializer.data) is False:
+        return Response({"errId": 12, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     else:
-        if dbModel.userMail != serviceThreeSerializer.data["userMail"]:
-            return Response({"errId": 2, "errMessage": serviceThreeSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            try:
-                dbModel.userStatus = 3
-                dbModel.name = serviceThreeSerializer.data["name"]
-                dbModel.surname = serviceThreeSerializer.data["surname"]
-                dbModel.phoneNumber =  serviceThreeSerializer.data["phoneNumber"]
-                dbModel.phonePrefix =   serviceThreeSerializer.data["phonePrefix"]
-                dbModel.save()
-                
-            except:
-                return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
-            
-            if REG007SENDVERCODE(serviceThreeSerializer.data) is False:
-                return Response({"errId": 12, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({"Success"}, status=status.HTTP_200_OK)
+            return Response({"Success"}, status=status.HTTP_200_OK)
 
 
 def serviceFour(request):
     serviceFourSerializer = ServiceFourSerializer(data=request.data)
-    dbModel = UserModel.objects.get(userMail = serviceFourSerializer.data["userMail"])
     if serviceFourSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceFourSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    if dbModel.userMail != serviceFourSerializer.data["userMail"]:
-            return Response({"errId": 9, "errMessage": serviceFourSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        dbModel = UserModel.objects.get(userMail = serviceFourSerializer.data["userMail"])
+    except:
+        return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST) 
     if REG008SENDVERCODE(serviceFourSerializer.data) is False:
             return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     else:
@@ -127,12 +131,13 @@ def serviceFour(request):
 
 def serviceFive(request):
     serviceFiveSerializer = ServiceFiveSerializer(data=request.data)
-    dbModel = UserModel.objects.get(userMail=serviceFiveSerializer.data["userMail"])
-    dbModel_app = UserApp.objects.get()
     if serviceFiveSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceFiveSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    if dbModel.userMail != serviceFiveSerializer.data["userMail"]:
-            return Response({"errId": 9, "errMessage": serviceFiveSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        dbModel = UserModel.objects.get(userMail = serviceFiveSerializer.data["userMail"])
+    except:
+        return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST) 
+    dbModel_app = UserApp.objects.get()
     if dbModel_app.appID != int(serviceFiveSerializer.data["appID"]):
             return Response({"errId": 13, "errMessage": serviceFiveSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     if REG002PSWMNG(serviceFiveSerializer.data) is False:
@@ -163,13 +168,11 @@ def serviceSix(request):
     if REG012CHKPROMO(serviceSixSerializer.data) is False:
         return Response({"errId": 26, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     if dbModel.userMail != serviceSixSerializer.data["userMail"]:
-            return Response({"errId": 9, "errMessage": serviceSixSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
+            return Response({"errId": 9, "errMessage": serviceSixSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)   
     try:
         REG011IDCREATION(serviceSixSerializer.data)
     except:
-        return Response({"errId": 16, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({"errId": 16, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)  
     try:
         dbModel.promoCode = serviceSixSerializer.data["promoCode"]
         dbModel.userID = serviceSixSerializer.data["promoCode"]
@@ -177,7 +180,6 @@ def serviceSix(request):
         return Response({"Success"}, status=status.HTTP_200_OK)
     except:
         return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 def REG007SENDVERCODE(userData):

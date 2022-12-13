@@ -19,7 +19,6 @@ class UserModel(models.Model):
     userProg = models.IntegerField(default=0,blank=True,null=True)
     userID = models.IntegerField(default=0,blank=True,null=True)
     
-
     def __str__(self):
         return str(self.userName)
 
@@ -35,6 +34,5 @@ class UserApp(models.Model):
     appID = models.IntegerField()
     userStatus = models.IntegerField()
     
-    #return integer
     def __str__(self) -> int:
         return  str(self.appID)
