@@ -10,6 +10,7 @@ class ServiceOneSerializer(serializers.Serializer):
     userCountryCode = serializers.CharField(max_length=2)
     userLanguage = serializers.CharField(max_length=2)
     userPresenterId = serializers.IntegerField(required=False, max_value=15)
+    userFunctionType = serializers.CharField(max_length=1)
 
 class ServiceTwoSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)
@@ -17,6 +18,7 @@ class ServiceTwoSerializer(serializers.Serializer):
     userMail = serializers.CharField(max_length=50)
     userLanguage = serializers.CharField(max_length=2)
     mailVerificationCode = serializers.CharField(max_length=16)
+    userFunctionType = serializers.CharField(max_length=1)
 
 class ServiceThreeSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)
@@ -27,6 +29,7 @@ class ServiceThreeSerializer(serializers.Serializer):
     phonePrefix = serializers.CharField(max_length=7)
     userLanguage = serializers.CharField(max_length=2)
     phoneNumber = serializers.DecimalField(max_digits=20, decimal_places=2)
+    userFunctionType = serializers.CharField(max_length=1)
 
 class ServiceFourSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)
@@ -34,6 +37,7 @@ class ServiceFourSerializer(serializers.Serializer):
     userMail = serializers.CharField(max_length=50)
     userLanguage = serializers.CharField(max_length=2)
     phoneVerificationCode = serializers.CharField(max_length=16)
+    userFunctionType = serializers.CharField(max_length=1)
 
 class ServiceFiveSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)
@@ -56,6 +60,16 @@ class ServiceSixSerializer(serializers.Serializer):
     userMail = serializers.CharField(max_length=50)
     userLanguage = serializers.CharField(max_length=2)
     promoCode = serializers.CharField(required=False, max_length=10)
+
+
+class subServiceOne(serializers.Serializer):
+    userProg = serializers.IntegerField(max_value=15)
+    userMail = serializers.CharField(max_length=50)
+    userLanguage = serializers.CharField(max_length=2)
+    userPhone = serializers.CharField(max_length=20)
+    verCode = serializers.CharField(max_length=16)
+    deltaTime = serializers.TimeField()
+    userFunctionType = serializers.CharField(max_length=1)
     
     
     

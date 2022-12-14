@@ -36,3 +36,18 @@ class UserApp(models.Model):
     
     def __str__(self) -> int:
         return  str(self.appID)
+
+
+class VerificationCodeModel(models.Model):
+    verUserProg = models.IntegerField()
+    verCodeType = models.CharField(max_length=1)
+    verStartDate = models.DateTimeField()
+    verEndDate = models.DateTimeField()
+    lastLoginerr = models.DateTimeField()
+    status = models.CharField(max_length=1)
+    cterr = models.IntegerField()
+    lasttentative = models.DateTimeField()
+    verificationCode = models.CharField(max_length=6, default='000000')
+
+    def __str__(self) -> str:
+        return self.verificationCode
