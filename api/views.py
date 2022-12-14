@@ -194,6 +194,7 @@ def REG002PSWMNG(userData):
 def REG012CHKPROMO(userData):
     return True
 
+
 def REG011IDCREATION(userData):
     dbModel = UserModel.objects.get()
     #userdata promocode => userprog
