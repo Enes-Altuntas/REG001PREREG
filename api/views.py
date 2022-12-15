@@ -74,9 +74,9 @@ def serviceTwo(request):
             userMail=serviceTwoSerializer.data["userMail"])
     except:
         return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
-        # ANOTHER SERVICE
-    if REG008SENDVERCODE(serviceTwoSerializer.data) is False:
-        return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+
+    return REG008SENDVERCODE(serviceTwoSerializer.data) is False:
+         
     try:
         #dbModel.objects.get(UserModel.userStatus == 2)
         dbModel.userStatus = 2
