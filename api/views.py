@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import *
-from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel
+from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
 
@@ -74,7 +74,6 @@ def serviceTwo(request):
             userMail=serviceTwoSerializer.data["userMail"])
     except:
         return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
-        # ANOTHER SERVICE
     if REG008SENDVERCODE(serviceTwoSerializer.data) is False:
         return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
@@ -193,7 +192,95 @@ def REG007SENDVERCODE(userData):
 
 
 def REG002PSWMNG(userData):
-    return True
+    user = UserModel.objects.get(userMail=userData["userMail"])
+    password = PasswordModel.objects.get(userMail=userData["userMail"])
+    passwordCheck = ServiceFiveSerializer(data=userData.data)
+    if passwordCheck.is_valid():
+        if "I" == passwordCheck.data["userFunctionType"]:
+            if passwordCheck.data["userProg"] != user.data["userProg"]:
+                return Response({"errId": 2, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+            if passwordCheck.data["userPassword"] != password.passwordPassword:
+                return Response({"errId": 17, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+            if passwordCheck.data["userPassword"].length < 8 and type(passwordCheck.data["userPassword"]) == int:
+                return Response({"errId": 18, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                password.passwordPassword = passwordCheck.data["userPassword"]
+                password.passwordStatus = "A"
+                password.passwordUserProg = passwordCheck.data["userProg"]
+                password.passwordLastLogin = datetime.now()
+                password.passwordStartDate = datetime.now()
+                password.passwordEndDate = 999999999
+                password.save()
+                return Response({"Success"}, status=status.HTTP_200_OK)
+            except:
+                return Response({"errId": 8, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+        elif "C" == passwordCheck.data["userFunctionType"]:
+            if passwordCheck.is_valid():
+                if passwordCheck.data["oldPassword"] != password.passwordPassword and password.passwordStatus != "A":
+                    return Response({"errId": 19, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+                if passwordCheck.data["newPassword"] == password.passwordPassword:
+                    return Response({"errId": 20, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+                if passwordCheck.data["newPassword"].length == 8 and type(passwordCheck.data["newPassword"]) == int:
+                    try:
+                        password.passwordPassword = passwordCheck.data["newPassword"]
+                        password.passwordStatus = "E"
+                        password.save()
+                    except:
+                        return Response({"errId": 8, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    password.passwordPassword = passwordCheck.data["newPassword"]
+                    password.passwordStatus = "A"
+                    password.passwordUserProg = passwordCheck.data["userProg"]
+                    password.passwordLastLogin = datetime.now()
+                    password.passwordStartDate = datetime.now()
+                    password.passwordEndDate = 999999999
+                    password.save()
+                    return Response({"Success"}, status=status.HTTP_200_OK)
+                except:
+                    return Response({"errId": 8, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+        elif "V" == passwordCheck.data["userFunctionType"]:
+            # check for each input type
+            if passwordCheck.data["userProg"] != user.data["userProg"] and password.passwordStartDate != password.passwordStartDate:
+                return Response({"errId": 20, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+            if password.passwordCterr == 5 and password.passwordStatus == "L":
+                try:
+                    password.passwordLastLogin = datetime.now()
+                    password.passwordStatus = "L"
+                    password.save()
+                    return Response({"errId": 22, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+                except:
+                    return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+            if datetime.now().minute > password.passwordEndDate and password.passwordStatus == "E":
+                try:
+                    password.passwordStatus = "E"
+                    password.passwordLastLogin = datetime.now()
+                    password.save()
+                    return Response({"errId": 21, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+                except:
+                    return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+            if passwordCheck.data["userPassword"] == password.passwordPassword:
+                try:
+                    password.passwordCterr = password.passwordCterr + 1
+                    password.passwordLastLogin = datetime.now()
+                    password.save()
+                    return Response({"errId": 20, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+                except:
+                    return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                password.passwordLastLogin = datetime.now()
+                password.save()
+            except:
+                return Response({"errId": 10, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+
+
+
+
 
 
 def REG012CHKPROMO(userData):
@@ -226,7 +313,7 @@ def REG008SENDVERCODE(userData):
             verification.status = "L"
             verification.lastLoginerr = datetime.now()
             verification.save()
-            return Response({"errId": 23, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errId": 24, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
     if datetime.now().minute < verification.verEndDate.minute:

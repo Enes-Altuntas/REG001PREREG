@@ -51,3 +51,17 @@ class VerificationCodeModel(models.Model):
 
     def __str__(self) -> str:
         return self.verificationCode
+
+
+class PasswordModel(models.Model):
+    passwordPassword = models.CharField(max_length=50)
+    passwordUserProg = models.IntegerField()
+    passworduserMail = models.CharField(max_length=50)
+    passwordStatus = models.CharField(max_length=1)
+    passwordLastLogin = models.DateTimeField()
+    passwordEndDate = models.DateTimeField()
+    passwordStartDate = models.DateTimeField()
+    passwordCterr = models.IntegerField()
+
+    def __str__(self) -> str:
+        return self.password
