@@ -273,16 +273,6 @@ def REG002PSWMNG(userData):
                 return Response({"errId": 10, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-
-
-
-
-
-
-
-
 def REG012CHKPROMO(userData):
     return True
 
