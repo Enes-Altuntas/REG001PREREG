@@ -1,0 +1,17 @@
+FROM python:3.10.9-slim-buster
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+ADD . /app
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY . .
+
+RUN python manage.py migrate
+
+CMD ["python", "manage.py", "runserver"]
