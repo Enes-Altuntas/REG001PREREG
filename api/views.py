@@ -5,6 +5,8 @@ from .serializers import *
 from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
+import cx_Oracle
+cx_Oracle.init_oracle_client(lib_dir=r"F:\Oracle\instantclient_21_8")
 
 
 @api_view(['POST'])

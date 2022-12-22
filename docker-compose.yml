@@ -1,15 +1,22 @@
-version: '3'
+version: '3.9'
 
 services:
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8081:8081"
+
   db:
-    image: oracle/database:18.3.0-ee
+    image: container-registry.oracle.com/database/enterprise:latest
+    restart: always
     environment:
       - ORACLE_PWD=<password>
       - ORACLE_SID=<sid>
       - ORACLE_PDB=<pdb_name>
       - ORACLE_CHARACTERSET=<character_set>
     ports:
-      - "1521:1521"
+      - "8080:8080"
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
