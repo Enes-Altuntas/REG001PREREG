@@ -2,12 +2,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import *
-from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel
+from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
-import cx_Oracle
-cx_Oracle.init_oracle_client(lib_dir=r"F:\Oracle\instantclient_21_8")
-
 
 @api_view(['POST'])
 def mainService(request):
@@ -27,12 +24,11 @@ def mainService(request):
         elif baseSerializer.data["callType"] == 6:
             return serviceSix(request)
     else:
-        return Response({"errId": 1, "errMessage": baseSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"errId": errorCodes["errorCode"], "errMessage": errorCodes["description"]}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def serviceOne(request):
     serviceOneSerializer = ServiceOneSerializer(data=request.data)
-
     if serviceOneSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceOneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     dbModel_CountryCode = CountryModel.objects.get(
@@ -61,7 +57,7 @@ def serviceOne(request):
     except:
         return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if REG007SENDVERCODE(userSerializer.data) is False:
+    if REG007SENDVERCODE(userSerializer.data)["is_Active"] == False:
         return Response({"errId": 7, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({"Success"}, status=status.HTTP_200_OK)
@@ -190,7 +186,23 @@ def serviceSix(request):
 
 
 def REG007SENDVERCODE(userData):
-    return True
+    verificationCode = ServiceOneSerializer(data=userData.data)
+    user = UserModel.objects.get(userMail=userData["userMail"])
+    is_Active = True
+    verification = VerificationCodeModel.objects.get(
+        verUserProg=verificationCode.data["userProg"])
+    if verificationCode.is_valid():
+        if verificationCode.data["user_prog"] != user.userProg:
+            return Response({"errId": 2, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+        # how to check verification code already exist
+        # max start date?
+        if verificationCode.data["user_prog"] != user.userProg and verification.verStartDate != 9999999:
+            is_Active = False
+            return Response({"errId": 1, "errMessage": "GEN001ERR", "active": is_Active}, status=status.HTTP_400_BAD_REQUEST)
+        # generate verification code?
+
+
+
 
 
 def REG002PSWMNG(userData):

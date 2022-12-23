@@ -209,3 +209,43 @@ class UserPayMet(models.Model):
 
     def __str__(self) -> str:
         return self.payment_method
+
+
+class errorCodes:
+    error_codes = [
+        {'error_code': 1, 'description': 'Wrong call type'},
+        {'error_code': 2, 'description': 'Missing mandatory data'},
+        {'error_code': 3, 'description': 'User_mail already registered'},
+        {'error_code': 4, 'description': [{"1": "Waiting for mail validation"}, {"2": "Waiting for phone validation"}, {
+            "3": "Waiting for additional info from pe-registration"}, {"4": "Waiting for additional info from pe-registration"}, {"5": "Pre-registration phase completed"}]},
+        {'error_code': 5, 'description': 'Invalid Country code'},
+        {'error_code': 6, 'description': 'Presenter not valid'},
+        {'error_code': 7, 'description': 'Unsuccessfull mail validation'},
+        {'error_code': 8, 'description': 'Unsuccessfull insert table'},
+        {'error_code': 9, 'description': 'User mail not valid'},
+        {'error_code': 10, 'description': 'Unsuccessfull update table'},
+        {'error_code': 12, 'description': 'Unsuccessfull phone validation'},
+        {'error_code': 13, 'description': 'Invalid Application Code'},
+        {'error_code': 14, 'description': 'Unsuccessfull password validation'},
+        {'error_code': 16, 'description': 'Unsuccessfull ID creation'},
+        {'error_code': 17, 'description': 'Password already registered'},
+        {'error_code': 18, 'description': 'Password not numeric'},
+        {'error_code': 19, 'description': 'Invalid old password'},
+        {'error_code': 20, 'description': 'Invalid password'},
+        {'error_code': 21, 'description': 'Expired password'},
+        {'error_code': 22, 'description': 'Locked password'},
+        {'error_code': 23, 'description': 'Invalid verification code'},
+        {'error_code': 24, 'description': 'Locked verification code'},
+        {'error_code': 25, 'description': 'Expired verification code'},
+        {'error_code': 26, 'description': 'Invalid Promo'},
+        {'error_code': 28, 'description': 'Failed Verification code'},
+        {'error_code': 29, 'description': 'Missing error code'},
+        {'error_code': 30, 'description': 'UserID not valid'},
+        {'error_code': 31, 'description': ''},
+    ]
+
+
+abs = [{
+    'error_code': 1,
+    'description': [{'Wrong call type'}, {"asd": "asd"}]
+}]
