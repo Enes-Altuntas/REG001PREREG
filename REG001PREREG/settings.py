@@ -78,6 +78,8 @@ WSGI_APPLICATION = 'REG001PREREG.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+
+#ORACLE DB CONNECTION
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
