@@ -5,6 +5,10 @@ from .serializers import *
 from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
+import pymysql
+
+pymysql.install_as_MySQLdb()
+
 
 @api_view(['POST'])
 def mainService(request):
@@ -35,17 +39,22 @@ def serviceOne(request):
         value=serviceOneSerializer.data["userCountryCode"])
     try:
         dbModel = UserModel.objects.get()
+
+        #"SELECT * FROM UserModel "
+        dbModel.save()
+
     except:
         return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
-    if dbModel.userMail == serviceOneSerializer.data["userMail"]:
+    if dbModel.userMail == serviceOneSerializer.data["userMail"]:  # FALSE
         if dbModel.userStatus >= 4:
             return Response({"errId": 3, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
         elif dbModel.userStatus < 4:
             return Response({"errId": 4, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    # FALSE
     if dbModel_CountryCode.value != serviceOneSerializer.data["userCountryCode"]:
         return Response({"errId": 5, "errMessage": "Country code already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if dbModel.userPresenterId is not 0:
+    if dbModel.userPresenterId != 0:
         if serviceOneSerializer.data["userPresenterId"] != dbModel.userPresenterId:
             return Response({"errId": 6, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
@@ -53,11 +62,11 @@ def serviceOne(request):
         userSerializer = UserSerializer(data=request.data)
         if userSerializer.is_valid() and countryCodeSerializer.is_valid():
             countryCodeSerializer.save()
-            userSerializer.save()
+            userSerializer.save()  # TRUE
     except:
         return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if REG007SENDVERCODE(userSerializer.data)["is_Active"] == False:
+    if REG007SENDVERCODE(userSerializer.data):
         return Response({"errId": 7, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({"Success"}, status=status.HTTP_200_OK)
@@ -119,7 +128,7 @@ def serviceFour(request):
             userMail=serviceFourSerializer.data["userMail"])
     except:
         return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
-    if REG008SENDVERCODE(serviceFourSerializer.data) is False:
+    if REG008CHECKVERCODE(serviceFourSerializer.data) is False:
         return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     else:
         try:
@@ -185,8 +194,20 @@ def serviceSix(request):
         return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+def REG009LOGIN(request):
+    loginSerializer = LoginSerializer(data=request.data)
+    dbModel = UserModel.objects.get(userProg=loginSerializer.data["userProg"])
+    if loginSerializer.is_valid() == False:
+        return Response({"errId": 1, "errMessage": loginSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    if loginSerializer["prog"].is_Present():
+        if (loginSerializer["prog"] != dbModel.userProg):
+            return Response({"errId": 30, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+        loginSerializer.data["functionType"] = "V"
+        REG002PSWMNG(loginSerializer.data)
+
+
 def REG007SENDVERCODE(userData):
-    verificationCode = ServiceOneSerializer(data=userData.data)
+    verificationCode = SendVerCodeSerializer(data=userData.data)
     user = UserModel.objects.get(userMail=userData["userMail"])
     is_Active = True
     verification = VerificationCodeModel.objects.get(
@@ -202,12 +223,9 @@ def REG007SENDVERCODE(userData):
         # generate verification code?
 
 
-
-
-
 def REG002PSWMNG(userData):
-    user = UserModel.objects.get(userMail=userData["userMail"])
-    password = PasswordModel.objects.get(userMail=userData["userMail"])
+    user = UserModel.objects.get(userProg=userData["userProg"])
+    password = PasswordModel.objects.get(passwordUserProg=userData["userProg"])
     passwordCheck = ServiceFiveSerializer(data=userData.data)
     if passwordCheck.is_valid():
         if "I" == passwordCheck.data["userFunctionType"]:
@@ -293,13 +311,12 @@ def REG012CHKPROMO(userData):
 
 def REG011IDCREATION(userData):
     dbModel = UserModel.objects.get()
-    # userdata promocode => userprog
-    dbModel.userProg = userData["promoCode"]
+    dbModel.userID = userData["countryCode"] + userData["userProg"]
 
     return dbModel.userProg
 
 
-def REG008SENDVERCODE(userData):
+def REG008CHECKVERCODE(userData):
     subService = subServiceOne(data=userData)
     if subService.is_valid():
         if not "M" or "P" or "W" in subService.data["userFunctionType"]:
