@@ -1,5 +1,6 @@
 from django.db import models
 
+#MODELS
 
 class UserModel(models.Model):
 

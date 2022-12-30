@@ -30,7 +30,7 @@ def mainService(request):
     else:
         return Response({"errId": errorCodes["errorCode"], "errMessage": errorCodes["description"]}, status=status.HTTP_400_BAD_REQUEST)
 
-
+#LOGIC
 def serviceOne(request):
     serviceOneSerializer = ServiceOneSerializer(data=request.data)
     if serviceOneSerializer.is_valid() == False:
