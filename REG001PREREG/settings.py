@@ -80,12 +80,12 @@ WSGI_APPLICATION = 'REG001PREREG.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.oracle',
-        'NAME': 'xe',
-        'USER': 'root',
-        'PASSWORD': 'password',
-        'HOST': '127.0.0.1',
-        'PORT': '8080',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db001_registro',
+        'USER': 'emin.selek',
+        'PASSWORD': 'Etix.2022',
+        'HOST': '10.12.5.172',
+        'PORT': '3306',
     }
 }
 

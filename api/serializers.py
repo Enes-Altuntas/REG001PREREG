@@ -53,6 +53,7 @@ class ServiceFiveSerializer(serializers.Serializer):
     appAcceptStatistics = serializers.CharField(required=False, max_length=1)
     userLanguage = serializers.CharField(max_length=2)
     password = serializers.CharField(max_length=16)
+    userFunctionType = serializers.CharField(max_length=1)
 
 class ServiceSixSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)
@@ -71,6 +72,19 @@ class subServiceOne(serializers.Serializer):
     deltaTime = serializers.TimeField()
     userFunctionType = serializers.CharField(max_length=1)
     
+
+class LoginSerializer(serializers.Serializer):
+    prog = serializers.IntegerField(max_value=15)
+    password = serializers.CharField(max_length=16)
+    functionType = serializers.CharField(max_length=1)
+
+
+class SendVerCodeSerializer(serializers.Serializer):
+    userFunctionType = serializers.CharField(max_length=1)
+    userProg = serializers.IntegerField(max_value=15)
+    userMail = serializers.CharField(max_length=50)
+    userPhone = serializers.CharField(max_length=20)
+    deltaTime = serializers.DateTimeField(auto_now_add=True)
     
     
 

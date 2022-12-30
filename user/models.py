@@ -22,6 +22,7 @@ class UserModel(models.Model):
     promoCode = models.CharField(max_length=10, blank=True, default='N')
     userProg = models.IntegerField(default=0, blank=True, null=True)
     userID = models.IntegerField(default=0, blank=True, null=True)
+    functionType = models.CharField(max_length=1, blank=True, null=True)
 
     def __str__(self):
         return str(self.userName)
