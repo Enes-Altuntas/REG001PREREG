@@ -11,6 +11,8 @@ class ServiceOneSerializer(serializers.Serializer):
     userLanguage = serializers.CharField(max_length=2)
     userPresenterId = serializers.IntegerField(required=False, max_value=15)
     userFunctionType = serializers.CharField(max_length=1)
+    userProg = serializers.IntegerField(max_value=15)
+    userPhone = serializers.CharField(max_length=20)
 
 class ServiceTwoSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)
@@ -84,7 +86,6 @@ class SendVerCodeSerializer(serializers.Serializer):
     userProg = serializers.IntegerField(max_value=15)
     userMail = serializers.CharField(max_length=50)
     userPhone = serializers.CharField(max_length=20)
-    deltaTime = serializers.DateTimeField(auto_now_add=True)
     
     
 

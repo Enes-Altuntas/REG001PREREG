@@ -1,3 +1,4 @@
+import MySQLdb
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
@@ -6,8 +7,6 @@ from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel,
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
 import pymysql
-
-pymysql.install_as_MySQLdb()
 
 
 @api_view(['POST'])
@@ -30,43 +29,41 @@ def mainService(request):
     else:
         return Response({"errId": errorCodes["errorCode"], "errMessage": errorCodes["description"]}, status=status.HTTP_400_BAD_REQUEST)
 
-#LOGIC
+# LOGIC
+
+
 def serviceOne(request):
     serviceOneSerializer = ServiceOneSerializer(data=request.data)
+    dbModel = UserModel.objects.all().get()
+    userSerializer = UserSerializer(data=request.data)
     if serviceOneSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceOneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    dbModel_CountryCode = CountryModel.objects.get(
-        value=serviceOneSerializer.data["userCountryCode"])
-    try:
-        dbModel = UserModel.objects.get()
-
-        #"SELECT * FROM UserModel "
-        dbModel.save()
-
-    except:
-        return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
-    if dbModel.userMail == serviceOneSerializer.data["userMail"]:  # FALSE
+    if serviceOneSerializer.data["userMail"] == UserModel.objects.get(userMail=serviceOneSerializer.data["userMail"]):
         if dbModel.userStatus >= 4:
             return Response({"errId": 3, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
         elif dbModel.userStatus < 4:
             return Response({"errId": 4, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
-    # FALSE
+
+    dbModel_CountryCode = CountryModel.objects.get(
+        value=serviceOneSerializer.data["userCountryCode"])
     if dbModel_CountryCode.value != serviceOneSerializer.data["userCountryCode"]:
         return Response({"errId": 5, "errMessage": "Country code already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if dbModel.userPresenterId != 0:
+    if CountryModel.objects.filter(value=serviceOneSerializer.data["userCountryCode"]).exists() == True:
         if serviceOneSerializer.data["userPresenterId"] != dbModel.userPresenterId:
             return Response({"errId": 6, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        countryCodeSerializer = CountryCodeSerializer(data=request.data)
-        userSerializer = UserSerializer(data=request.data)
-        if userSerializer.is_valid() and countryCodeSerializer.is_valid():
-            countryCodeSerializer.save()
-            userSerializer.save()  # TRUE
+        dbModel.userStatus = 1
+        dbModel.userMail = serviceOneSerializer.data["userMail"]
+        dbModel.userCountryCode = serviceOneSerializer.data["userCountryCode"]
+        dbModel.userPresenterId = serviceOneSerializer.data["userPresenterId"]
+        dbModel.userLanguage = serviceOneSerializer.data["userLanguage"]
+        dbModel.save()
     except:
         return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
-
-    if REG007SENDVERCODE(userSerializer.data):
+    # BEFORE SENDING THE VERIFICATION SERVICE WE NEED TO GET HIS PHONE NUMBER SO MY IDEA IS A COMPLETE REGISTRATION PAGE THAT WE COLLECT ALL THE DATA OTHERWISE
+    # THAT SUBSERVICE IS NOT GOING TO WORK UNDER SERVICE ONE WE NEED TO CREATE ANOTHER CALLTYPE TO CALL THE SERVICE
+    if REG007SENDVERCODE(serviceOneSerializer.data) is False:
         return Response({"errId": 7, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({"Success"}, status=status.HTTP_200_OK)
@@ -81,7 +78,7 @@ def serviceTwo(request):
             userMail=serviceTwoSerializer.data["userMail"])
     except:
         return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
-    if REG008SENDVERCODE(serviceTwoSerializer.data) is False:
+    if REG007SENDVERCODE(serviceTwoSerializer.data) is False:
         return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
         #dbModel.objects.get(UserModel.userStatus == 2)
@@ -206,14 +203,14 @@ def REG009LOGIN(request):
         REG002PSWMNG(loginSerializer.data)
 
 
-def REG007SENDVERCODE(userData):
-    verificationCode = SendVerCodeSerializer(data=userData.data)
-    user = UserModel.objects.get(userMail=userData["userMail"])
+def REG007SENDVERCODE(request):
+    user = UserModel.objects.get(userMail=request["userMail"])
     is_Active = True
-    verification = VerificationCodeModel.objects.get(
-        verUserProg=verificationCode.data["userProg"])
-    if verificationCode.is_valid():
-        if verificationCode.data["user_prog"] != user.userProg:
+    verificationCode = SendVerCodeSerializer(data=request)
+    if verificationCode.is_valid() == False:
+        verification = VerificationCodeModel.objects.get(
+            verUserProg=verificationCode.data["userProg"])
+        if verificationCode.userProg != user.userProg:
             return Response({"errId": 2, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
         # how to check verification code already exist
         # max start date?
