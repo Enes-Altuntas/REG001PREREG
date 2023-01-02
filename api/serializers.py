@@ -13,7 +13,7 @@ class ServiceOneSerializer(serializers.Serializer):
     userFunctionType = serializers.CharField(max_length=1)
     userProg = serializers.IntegerField(max_value=15)
     userPhone = serializers.CharField(max_length=20)
-    userType = serializers.CharField(max_length=1)
+    userType = serializers.CharField(max_length=2)
 
 class ServiceTwoSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)

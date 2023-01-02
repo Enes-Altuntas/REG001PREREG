@@ -1,4 +1,3 @@
-import MySQLdb
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
@@ -6,7 +5,6 @@ from .serializers import *
 from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes, CustomerModel, CompanyModel, ExpertModel
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
-import pymysql
 
 
 @api_view(['POST'])
@@ -48,9 +46,9 @@ def serviceOne(request):
         value=serviceOneSerializer.data["userCountryCode"])
     if dbModel_CountryCode.value != serviceOneSerializer.data["userCountryCode"]:
         return Response({"errId": 5, "errMessage": "Country code already exists"}, status=status.HTTP_400_BAD_REQUEST)
-
+    dbModel = UserModel.objects.get()
     if CountryModel.objects.filter(value=serviceOneSerializer.data["userCountryCode"]).exists() == True:
-        if serviceOneSerializer.data["userPresenterId"] != dbModel.userPresenterId:
+        if serviceOneSerializer.data["userPresenterId"] != UserModel.objects.get(userPresenterId=serviceOneSerializer.data["userPresenterId"]).userPresenterId:
             return Response({"errId": 6, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
         dbModel.userStatus = 1
@@ -67,26 +65,25 @@ def serviceOne(request):
     # -------------------------------------------------------------------------------------------------------------
 
     # CHECK USER_USERTYPE
-    customer = CustomerModel.objects.get(
-        cus_mail=serviceOneSerializer.data["userMail"])
-    company = CompanyModel.objects.get(
-        com_mail=serviceOneSerializer.data["userMail"])
-    expert = ExpertModel.objects.get(
-        exp_mail=serviceOneSerializer.data["userMail"])
-
     if serviceOneSerializer.data["userType"] == "CU":
+        customer = CustomerModel.objects.get(
+            cus_mail=serviceOneSerializer.data["userMail"])
         try:
             customer.cus_prog = serviceOneSerializer.data["userProg"]
             customer.save()
         except:
             return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
     if serviceOneSerializer.data["userType"] == "CO":
+        company = CompanyModel.objects.get(
+            comp_mail=serviceOneSerializer.data["userMail"])
         try:
             company.comp_prog = serviceOneSerializer.data["userProg"]
             company.save()
         except:
             return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
     if serviceOneSerializer.data["userType"] == "EX":
+        expert = ExpertModel.objects.get(
+            exp_mail=serviceOneSerializer.data["userMail"])
         try:
             expert.exp_prog = serviceOneSerializer.data["userProg"]
             expert.save()
