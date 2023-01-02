@@ -95,7 +95,6 @@ def serviceOne(request):
 
     return Response({"Success"}, status=status.HTTP_200_OK)
 
-# test
 
 def serviceTwo(request):
     serviceTwoSerializer = ServiceTwoSerializer(data=request.data)
