@@ -24,6 +24,7 @@ class UserModel(models.Model):
     userProg = models.IntegerField(default=0, blank=True, null=True)
     userID = models.IntegerField(default=0, blank=True, null=True)
     functionType = models.CharField(max_length=1, blank=True, null=True)
+    userType = models.CharField(max_length=1, blank=True, null=True)
 
     def __str__(self):
         return str(self.userName)
@@ -74,9 +75,10 @@ class PasswordModel(models.Model):
         return self.password
 
 
-class Customer(models.Model):
-    cus_progr = models.IntegerField(unique=True)
+class CustomerModel(models.Model):
+    cus_prog = models.IntegerField(unique=True)
     cus_name = models.CharField(max_length=30)
+    cus_mail = models.EmailField(unique=True)
     cus_surname = models.CharField(max_length=30)
     cus_address1 = models.CharField(max_length=50)
     cus_address2 = models.CharField(max_length=50, blank=True, null=True)
@@ -98,7 +100,7 @@ class Customer(models.Model):
 
 
 class CompanyModel(models.Model):
-    comp_progr = models.IntegerField(unique=True)
+    comp_prog = models.IntegerField(unique=True)
     comp_mail = models.EmailField(unique=True)
     comp_name = models.CharField(max_length=50)
     comp_address1 = models.CharField(max_length=50)
@@ -121,8 +123,9 @@ class CompanyModel(models.Model):
         return self.comp_name
 
 
-class Expert(models.Model):
+class ExpertModel(models.Model):
     user_id = models.PositiveIntegerField(unique=True)
+    exp_prog = models.IntegerField()
     expert_mail = models.EmailField(unique=True)
     business_name = models.CharField(max_length=30)
     document_type = models.CharField(max_length=2)

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import *
-from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes
+from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes, CustomerModel, CompanyModel, ExpertModel
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
 import pymysql
@@ -34,11 +34,11 @@ def mainService(request):
 
 def serviceOne(request):
     serviceOneSerializer = ServiceOneSerializer(data=request.data)
-    dbModel = UserModel.objects.all().get()
-    userSerializer = UserSerializer(data=request.data)
     if serviceOneSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceOneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     if serviceOneSerializer.data["userMail"] == UserModel.objects.get(userMail=serviceOneSerializer.data["userMail"]):
+        dbModel = UserModel.objects.get(
+            userMail=serviceOneSerializer.data["userMail"])
         if dbModel.userStatus >= 4:
             return Response({"errId": 3, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
         elif dbModel.userStatus < 4:
@@ -63,6 +63,36 @@ def serviceOne(request):
         return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
     # BEFORE SENDING THE VERIFICATION SERVICE WE NEED TO GET HIS PHONE NUMBER SO MY IDEA IS A COMPLETE REGISTRATION PAGE THAT WE COLLECT ALL THE DATA OTHERWISE
     # THAT SUBSERVICE IS NOT GOING TO WORK UNDER SERVICE ONE WE NEED TO CREATE ANOTHER CALLTYPE TO CALL THE SERVICE
+
+    # -------------------------------------------------------------------------------------------------------------
+
+    # CHECK USER_USERTYPE
+    customer = CustomerModel.objects.get(
+        cus_mail=serviceOneSerializer.data["userMail"])
+    company = CompanyModel.objects.get(
+        com_mail=serviceOneSerializer.data["userMail"])
+    expert = ExpertModel.objects.get(
+        exp_mail=serviceOneSerializer.data["userMail"])
+
+    if serviceOneSerializer.data["userType"] == "CU":
+        try:
+            customer.cus_prog = serviceOneSerializer.data["userProg"]
+            customer.save()
+        except:
+            return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
+    if serviceOneSerializer.data["userType"] == "CO":
+        try:
+            company.comp_prog = serviceOneSerializer.data["userProg"]
+            company.save()
+        except:
+            return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
+    if serviceOneSerializer.data["userType"] == "EX":
+        try:
+            expert.exp_prog = serviceOneSerializer.data["userProg"]
+            expert.save()
+        except:
+            return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
+
     if REG007SENDVERCODE(serviceOneSerializer.data) is False:
         return Response({"errId": 7, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
 
