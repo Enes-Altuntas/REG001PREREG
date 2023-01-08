@@ -66,6 +66,14 @@ class ServiceSixSerializer(serializers.Serializer):
     promoCode = serializers.CharField(required=False, max_length=10)
 
 
+class ServiceSevenSerializer(serializers.Serializer):
+    callType = serializers.IntegerField(min_value=1, max_value=6)
+    language = serializers.CharField(max_length=2)
+    ownerId = serializers.IntegerField(max_value=15)
+    ownerCountryCode = serializers.CharField(max_length=2)
+    presenterId = serializers.IntegerField(max_value=15)
+
+
 class subServiceOne(serializers.Serializer):
     userProg = serializers.IntegerField(max_value=15)
     userMail = serializers.CharField(max_length=50)

@@ -30,6 +30,13 @@ class UserModel(models.Model):
         return str(self.userName)
 
 
+class LanguageModel(models.Model):
+    value = models.CharField(max_length=2)
+
+    def __str__(self) -> str:
+        return self.value
+
+
 class CountryModel(models.Model):
     value = models.CharField(max_length=2)
 
@@ -254,3 +261,10 @@ abs = [{
     'error_code': 1,
     'description': [{'Wrong call type'}, {"asd": "asd"}]
 }]
+
+
+class UploadImage(models.Model):
+    image = models.ImageField(upload_to='images')
+
+    def __str__(self):
+        return self.caption

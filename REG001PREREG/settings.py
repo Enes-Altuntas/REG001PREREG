@@ -88,6 +88,22 @@ DATABASES = {
         'PASSWORD': 'Etix.2022',
         'HOST': '10.12.5.172',
         'PORT': '3306',
+    },
+    'db99': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db99_services',
+        'USER': 'emin.selek',
+        'PASSWORD': 'Etix.2022',
+        'HOST': '10.12.5.172',
+        'PORT': '3306',
+    },
+    'community': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db002_community',
+        'USER': 'emin.selek',
+        'PASSWORD': 'Etix.2022',
+        'HOST': '10.12.5.172',
+        'PORT': '3306',
     }
 }
 

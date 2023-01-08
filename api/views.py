@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import *
-from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes, CustomerModel, CompanyModel, ExpertModel
+from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes, CustomerModel, CompanyModel, ExpertModel, LanguageModel , ImageModel
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
 
@@ -32,6 +32,7 @@ def mainService(request):
 
 def serviceOne(request):
     serviceOneSerializer = ServiceOneSerializer(data=request.data)
+
     if serviceOneSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceOneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     if serviceOneSerializer.data["userMail"] == UserModel.objects.get(userMail=serviceOneSerializer.data["userMail"]):
@@ -59,8 +60,6 @@ def serviceOne(request):
         dbModel.save()
     except:
         return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
-    # BEFORE SENDING THE VERIFICATION SERVICE WE NEED TO GET HIS PHONE NUMBER SO MY IDEA IS A COMPLETE REGISTRATION PAGE THAT WE COLLECT ALL THE DATA OTHERWISE
-    # THAT SUBSERVICE IS NOT GOING TO WORK UNDER SERVICE ONE WE NEED TO CREATE ANOTHER CALLTYPE TO CALL THE SERVICE
 
     # -------------------------------------------------------------------------------------------------------------
 
@@ -75,7 +74,7 @@ def serviceOne(request):
             return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
     if serviceOneSerializer.data["userType"] == "CO":
         company = CompanyModel.objects.get(
-            comp_mail=serviceOneSerializer.data["userMail"])
+            comp_mail=serviceOneSerializer.data["userMail"])  # USERPROG INSTEAD OF MAIL
         try:
             company.comp_prog = serviceOneSerializer.data["userProg"]
             company.save()
@@ -94,7 +93,7 @@ def serviceOne(request):
         return Response({"errId": 7, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({"Success"}, status=status.HTTP_200_OK)
-#test
+
 
 def serviceTwo(request):
     serviceTwoSerializer = ServiceTwoSerializer(data=request.data)
@@ -105,10 +104,9 @@ def serviceTwo(request):
             userMail=serviceTwoSerializer.data["userMail"])
     except:
         return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
-    if REG007SENDVERCODE(serviceTwoSerializer.data) is False:
+    if REG008CHECKVERCODE(serviceTwoSerializer.data) is False:
         return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        #dbModel.objects.get(UserModel.userStatus == 2)
         dbModel.userStatus = 2
         dbModel.save()
         return Response({"Success"}, status=status.HTTP_200_OK)
@@ -136,6 +134,32 @@ def serviceThree(request):
         dbModel.save()
     except:
         return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+    if serviceThreeSerializer.data["userType"] == "CU":
+        customer = CustomerModel.objects.get(
+            cus_mail=serviceThreeSerializer.data["userProg"])
+        try:
+            customer.cus_name = serviceThreeSerializer.data["name"]
+            customer.cus_surname = serviceThreeSerializer.data["surname"]
+            customer.cus_prog = serviceThreeSerializer.data["userProg"]
+            customer.save()
+        except:
+            return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
+    if serviceThreeSerializer.data["userType"] == "CO":
+        company = CompanyModel.objects.get(
+            comp_mail=serviceThreeSerializer.data["userProg"])  # USERPROG INSTEAD OF MAIL
+        try:
+            company.comp_prog = serviceThreeSerializer.data["userProg"]
+            company.save()
+        except:
+            return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
+    if serviceThreeSerializer.data["userType"] == "EX":
+        expert = ExpertModel.objects.get(
+            exp_mail=serviceThreeSerializer.data["userProg"])
+        try:
+            expert.exp_prog = serviceThreeSerializer.data["userProg"]
+            expert.save()
+        except:
+            return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
 
     if REG007SENDVERCODE(serviceThreeSerializer.data) is False:
         return Response({"errId": 12, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
@@ -218,6 +242,47 @@ def serviceSix(request):
         return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# def serviceSeven(request):
+#     serviceSevenSerializer = ServiceSevenSerializer(data=request.data)
+#     if serviceSevenSerializer.is_valid() == False:
+#         return Response({"errId": 5, "errMessage": serviceSevenSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+#     try:
+#         db_language = LanguageModel.objects.using('db99').get(
+#             userLanguage=serviceSevenSerializer.data["userLanguage"])
+#     except:
+#         return Response({"errId": 2, "errMessage": serviceSevenSerializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+#     if serviceSevenSerializer.data["callType"] == "front":
+#         try:
+#             db_user = UserModel.objects.get(
+#                 userProg=serviceSevenSerializer.data["ownerId"])
+#         except:
+#             return Response({"errId": 5, "errMessage": serviceSevenSerializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+#     elif serviceSevenSerializer.data["callType"] == "back":
+#         db_user.userCountryCode = serviceSevenSerializer.data["userCountryCode"]
+#     else:
+#         return Response({"errId": 9, "errMessage": serviceSevenSerializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+#     if serviceSevenSerializer.data["presenterId"] == "":
+#         db_user.userCountryCode = serviceSevenSerializer.data["userCountryCode"]
+#     if serviceSevenSerializer.data["presenterId"] == serviceSevenSerializer.data["ownerId"]:
+#         return Response({"errId": 8, "errMessage": serviceSevenSerializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+#     else:
+#         try:
+#             db_presenter = UserModel.objects.get(
+#                 userProg=serviceSevenSerializer.data["presenterId"])
+#         except:
+#             return Response({"errId": 6, "errMessage": serviceSevenSerializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+#     if db_presenter.userStatus > 4:
+#         db_presenter.userStatus = 0
+#     else:
+#         return Response({"errId": 7, "errMessage": serviceSevenSerializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+#     if serviceSevenSerializer.data["countryCode"] == db_user.userCountryCode:
+#         db_communty = CommunityModel.objects.using('db99').get(
+#             userProg=serviceSevenSerializer.data["ownerId"])
+#     else:
+#         return Response({"errId": 0, "errMessage": "Different Country!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 def REG009LOGIN(request):
     loginSerializer = LoginSerializer(data=request.data)
     dbModel = UserModel.objects.get(userProg=loginSerializer.data["userProg"])
@@ -237,13 +302,14 @@ def REG007SENDVERCODE(request):
     if verificationCode.is_valid() == False:
         verification = VerificationCodeModel.objects.get(
             verUserProg=verificationCode.data["userProg"])
-        if verificationCode.userProg != user.userProg:
-            return Response({"errId": 2, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+        if verificationCode.data["userProg"] != user.userProg:
+            is_Active = False
+            return False
         # how to check verification code already exist
         # max start date?
-        if verificationCode.data["user_prog"] != user.userProg and verification.verStartDate != 9999999:
+        if verificationCode.data["userProg"] != user.userProg and verification.verStartDate != 9999999:
             is_Active = False
-            return Response({"errId": 1, "errMessage": "GEN001ERR", "active": is_Active}, status=status.HTTP_400_BAD_REQUEST)
+            return False
         # generate verification code?
 
 
@@ -380,3 +446,4 @@ def REG008CHECKVERCODE(userData):
             verification.save()
         except:
             return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+
