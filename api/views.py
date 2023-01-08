@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import *
-from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes, CustomerModel, CompanyModel, ExpertModel, LanguageModel , ImageModel
+from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes, CustomerModel, CompanyModel, ExpertModel, LanguageModel
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime
 
@@ -146,7 +146,7 @@ def serviceThree(request):
             return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
     if serviceThreeSerializer.data["userType"] == "CO":
         company = CompanyModel.objects.get(
-            comp_mail=serviceThreeSerializer.data["userProg"])  # USERPROG INSTEAD OF MAIL
+            comp_prog=serviceThreeSerializer.data["userProg"])  # USERPROG INSTEAD OF MAIL
         try:
             company.comp_prog = serviceThreeSerializer.data["userProg"]
             company.save()
@@ -417,7 +417,7 @@ def REG008CHECKVERCODE(userData):
         verUserProg=subService.data["userProg"])
     if subService.data["userProg"] != verification.verUserProg and verification.verStartDate != verification.verStartDate:
         return Response({"errId": 23, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
-    if subService.initial_data["mailVerificationCode"] != verification.verificationCode:
+    if subService.data["mailVerificationCode"] != verification.verificationCode:
         return Response({"errId": 23, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     if verification.cterr != 5 and verification.status == "L":
         try:

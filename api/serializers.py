@@ -33,6 +33,7 @@ class ServiceThreeSerializer(serializers.Serializer):
     userLanguage = serializers.CharField(max_length=2)
     phoneNumber = serializers.DecimalField(max_digits=20, decimal_places=2)
     userFunctionType = serializers.CharField(max_length=1)
+    userType = serializers.CharField(max_length=2)
 
 class ServiceFourSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)
@@ -41,6 +42,7 @@ class ServiceFourSerializer(serializers.Serializer):
     userLanguage = serializers.CharField(max_length=2)
     phoneVerificationCode = serializers.CharField(max_length=16)
     userFunctionType = serializers.CharField(max_length=1)
+    mailVerificationCode = serializers.CharField(max_length=16)
 
 class ServiceFiveSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value= 1, max_value= 6)
@@ -82,6 +84,7 @@ class subServiceOne(serializers.Serializer):
     verCode = serializers.CharField(max_length=16)
     deltaTime = serializers.TimeField()
     userFunctionType = serializers.CharField(max_length=1)
+    mailVerificationCode = serializers.CharField(max_length=16)
     
 
 class LoginSerializer(serializers.Serializer):
