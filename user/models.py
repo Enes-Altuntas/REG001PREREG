@@ -1,13 +1,12 @@
 from django.db import models
-
-#MODELS
+import uuid
 
 class UserModel(models.Model):
 
     userMail = models.CharField(max_length=50)
     userCountryCode = models.CharField(max_length=2)
     userLanguage = models.CharField(max_length=2)
-    userPresenterId = models.IntegerField(default=0, blank=True)
+    userPresenterID = models.IntegerField(default=0, blank=True)
     userStatus = models.IntegerField(null=True, blank=True)
     name = models.CharField(max_length=30, blank=True, null=True)
     userName = models.CharField(max_length=3, blank=True, null=True)
@@ -21,10 +20,14 @@ class UserModel(models.Model):
     acceptPrivacy = models.CharField(max_length=1, blank=True, default='N')
     acceptStatistics = models.CharField(max_length=1, blank=True, default='N')
     promoCode = models.CharField(max_length=10, blank=True, default='N')
-    userProg = models.IntegerField(default=0, blank=True, null=True)
+    userProg = models.IntegerField(
+        primary_key=True, default=1, editable=False)
     userID = models.IntegerField(default=0, blank=True, null=True)
     functionType = models.CharField(max_length=1, blank=True, null=True)
     userType = models.CharField(max_length=2, blank=True, null=True)
+
+    class Meta:
+        db_table = 'user'
 
     def __str__(self):
         return str(self.userName)
@@ -33,12 +36,18 @@ class UserModel(models.Model):
 class LanguageModel(models.Model):
     value = models.CharField(max_length=2)
 
+    class Meta:
+        db_table = 'language'
+
     def __str__(self) -> str:
         return self.value
 
 
 class CountryModel(models.Model):
     value = models.CharField(max_length=2)
+
+    class Meta:
+        db_table = 'country'
 
     def __str__(self) -> str:
         return self.value
@@ -48,6 +57,9 @@ class UserApp(models.Model):
     userProg = models.IntegerField()
     appID = models.IntegerField()
     userStatus = models.IntegerField()
+
+    class Meta:
+        db_table = 'user_app'
 
     def __str__(self) -> int:
         return str(self.appID)
@@ -64,6 +76,9 @@ class VerificationCodeModel(models.Model):
     lasttentative = models.DateTimeField()
     verificationCode = models.CharField(max_length=6, default='000000')
 
+    class Meta:
+        db_table = 'verification_code'
+
     def __str__(self) -> str:
         return self.verificationCode
 
@@ -78,53 +93,67 @@ class PasswordModel(models.Model):
     passwordStartDate = models.DateTimeField()
     passwordCterr = models.IntegerField()
 
+    class Meta:
+        db_table = 'password'
+
     def __str__(self) -> str:
         return self.password
 
 
 class CustomerModel(models.Model):
     cus_prog = models.IntegerField(unique=True)
-    cus_name = models.CharField(max_length=30)
-    cus_mail = models.EmailField(unique=True)
-    cus_surname = models.CharField(max_length=30)
-    cus_address1 = models.CharField(max_length=50)
+    cus_name = models.CharField(max_length=30, blank=True, null=True)
+    cus_mail = models.CharField(max_length=50, blank=True, null=True)
+    cus_surname = models.CharField(max_length=30, blank=True, null=True)
+    cus_address1 = models.CharField(max_length=50, blank=True, null=True)
     cus_address2 = models.CharField(max_length=50, blank=True, null=True)
-    cus_city = models.CharField(max_length=30)
-    cus_postcode = models.CharField(max_length=30)
+    cus_city = models.CharField(max_length=30, blank=True, null=True)
+    cus_postcode = models.CharField(max_length=30, blank=True, null=True)
     cus_birthdate = models.DateField(blank=True, null=True)
-    cus_doctype = models.CharField(max_length=2)
-    cus_docid = models.CharField(max_length=20)
-    cus_docimgfrontid = models.CharField(max_length=10)
-    cus_docimgackid = models.CharField(max_length=10)
-    cus_residenceproofimg = models.CharField(max_length=10)
-    cus_vatcode = models.CharField(max_length=30)
+    cus_doctype = models.CharField(max_length=2, blank=True, null=True)
+    cus_docid = models.CharField(max_length=20, blank=True, null=True)
+    cus_docimgfrontid = models.CharField(max_length=10, blank=True, null=True)
+    cus_docimgackid = models.CharField(max_length=10, blank=True, null=True)
+    cus_residenceproofimg = models.CharField(
+        max_length=10, blank=True, null=True)
+    cus_vatcode = models.CharField(max_length=30, blank=True, null=True)
     cus_companyprogr = models.IntegerField(blank=True, null=True)
-    cus_companyrole = models.BooleanField()
-    cus_companyauthlevel = models.BooleanField()
+    cus_companyrole = models.BooleanField(blank=True, null=True)
+    cus_companyauthlevel = models.BooleanField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'customer'
 
     def __str__(self) -> str:
         return self.cus_name
 
 
 class CompanyModel(models.Model):
-    comp_prog = models.IntegerField(unique=True)
-    comp_mail = models.EmailField(unique=True)
-    comp_name = models.CharField(max_length=50)
-    comp_address1 = models.CharField(max_length=50)
+    comp_prog = models.IntegerField(unique=True, auto_created=True)
+    comp_mail = models.CharField(max_length=50, blank=True, null=True)
+    comp_name = models.CharField(max_length=50, blank=True, null=True)
+    comp_address1 = models.CharField(max_length=50, blank=True, null=True)
     comp_address2 = models.CharField(max_length=50, blank=True, null=True)
-    comp_city = models.CharField(max_length=30)
-    comp_postcode = models.CharField(max_length=30)
+    comp_city = models.CharField(max_length=30, blank=True, null=True)
+    comp_postcode = models.CharField(max_length=30, blank=True, null=True)
     comp_legalrepprogr = models.IntegerField(blank=True, null=True)
-    comp_legalrepname = models.CharField(max_length=30)
-    comp_legalrepsurname = models.CharField(max_length=30)
-    comp_legalrpcountry = models.CharField(max_length=2)
-    comp_legalrepmail = models.EmailField()
-    comp_legalrepdoctype = models.CharField(max_length=2)
-    comp_legalrepdocid = models.CharField(max_length=20)
-    comp_legalrepdocimgfrontid = models.CharField(max_length=10)
-    comp_legalrepdocimgackid = models.CharField(max_length=10)
-    comp_vatcode = models.CharField(max_length=30)
-    comp_sectorid = models.CharField(max_length=3)
+    comp_legalrepname = models.CharField(max_length=30, blank=True, null=True)
+    comp_legalrepsurname = models.CharField(
+        max_length=30, blank=True, null=True)
+    comp_legalrpcountry = models.CharField(max_length=2, blank=True, null=True)
+    comp_legalrepmail = models.CharField(max_length=50, blank=True, null=True)
+    comp_legalrepdoctype = models.CharField(
+        max_length=2, blank=True, null=True)
+    comp_legalrepdocid = models.CharField(max_length=20, blank=True, null=True)
+    comp_legalrepdocimgfrontid = models.CharField(
+        max_length=10, blank=True, null=True)
+    comp_legalrepdocimgackid = models.CharField(
+        max_length=10, blank=True, null=True)
+    comp_vatcode = models.CharField(max_length=30, blank=True, null=True)
+    comp_sectorid = models.CharField(max_length=3,  blank=True, null=True)
+
+    class Meta:
+        db_table = 'company'
 
     def __str__(self) -> str:
         return self.comp_name
@@ -142,6 +171,9 @@ class ExpertModel(models.Model):
     vat_code = models.CharField(max_length=30)
     job_sector_id = models.CharField(max_length=3)
 
+    class Meta:
+        db_table = 'expert'
+
     def __str__(self) -> str:
         return self.business_name
 
@@ -155,6 +187,9 @@ class App(models.Model):
     app_usertypeauth = models.CharField(max_length=1)
     app_startdate = models.DateField()
     app_enddate = models.DateField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'app'
 
     def __str__(self) -> str:
         return self.app_name
@@ -172,6 +207,9 @@ class PlanApp(models.Model):
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
 
+    class Meta:
+        db_table = 'plan_app'
+
     def __str__(self) -> str:
         return self.plan_name
 
@@ -182,6 +220,9 @@ class PlanDetails(models.Model):
     field_name = models.CharField(max_length=10)
     field_type = models.CharField(max_length=1)
     field_value = models.DecimalField(max_digits=5, decimal_places=2)
+
+    class Meta:
+        db_table = 'plan_details'
 
     def __str__(self) -> str:
         return self.plan + self.row_progr
@@ -195,6 +236,9 @@ class Profile(models.Model):
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
 
+    class Meta:
+        db_table = 'profile'
+
     def __str__(self) -> str:
         return self.profile_name
 
@@ -207,6 +251,9 @@ class PromoCode(models.Model):
     promo_startdate = models.DateField()
     promo_enddate = models.DateField()
 
+    class Meta:
+        db_table = 'promo_code'
+
     def __str__(self) -> str:
         return self.promo_promocode
 
@@ -218,6 +265,9 @@ class UserPayMet(models.Model):
     payment_method_id = models.CharField(max_length=30)
     payment_method_user_note = models.CharField(
         max_length=30, blank=True, null=True)
+
+    class Meta:
+        db_table = 'user_pay_met'
 
     def __str__(self) -> str:
         return self.payment_method
@@ -256,15 +306,11 @@ class errorCodes:
         {'error_code': 31, 'description': ''},
     ]
 
+    class Meta:
+        db_table = 'error_codes'
+
 
 abs = [{
     'error_code': 1,
     'description': [{'Wrong call type'}, {"asd": "asd"}]
 }]
-
-
-class UploadImage(models.Model):
-    image = models.ImageField(upload_to='images')
-
-    def __str__(self):
-        return self.caption

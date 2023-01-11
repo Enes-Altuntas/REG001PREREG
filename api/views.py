@@ -35,29 +35,25 @@ def serviceOne(request):
 
     if serviceOneSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceOneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    if serviceOneSerializer.data["userMail"] == UserModel.objects.get(userMail=serviceOneSerializer.data["userMail"]):
-        dbModel = UserModel.objects.get(
-            userMail=serviceOneSerializer.data["userMail"])
-        if dbModel.userStatus >= 4:
-            return Response({"errId": 3, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
-        elif dbModel.userStatus < 4:
-            return Response({"errId": 4, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    if UserModel.objects.filter(userMail=serviceOneSerializer.data["userMail"]).exists() == True:
+        if serviceOneSerializer.data["userMail"] == UserModel.objects.get(userMail=serviceOneSerializer.data["userMail"]):
+            dbModel = UserModel.objects.get(
+                userMail=serviceOneSerializer.data["userMail"])
+            if dbModel.userStatus >= 4:
+                return Response({"errId": 3, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            elif dbModel.userStatus < 4:
+                return Response({"errId": 4, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
-    dbModel_CountryCode = CountryModel.objects.get(
-        value=serviceOneSerializer.data["userCountryCode"])
-    if dbModel_CountryCode.value != serviceOneSerializer.data["userCountryCode"]:
-        return Response({"errId": 5, "errMessage": "Country code already exists"}, status=status.HTTP_400_BAD_REQUEST)
-    dbModel = UserModel.objects.get()
     if CountryModel.objects.filter(value=serviceOneSerializer.data["userCountryCode"]).exists() == True:
         if serviceOneSerializer.data["userPresenterId"] != UserModel.objects.get(userPresenterId=serviceOneSerializer.data["userPresenterId"]).userPresenterId:
             return Response({"errId": 6, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        dbModel.userStatus = 1
-        dbModel.userMail = serviceOneSerializer.data["userMail"]
-        dbModel.userCountryCode = serviceOneSerializer.data["userCountryCode"]
-        dbModel.userPresenterId = serviceOneSerializer.data["userPresenterId"]
-        dbModel.userLanguage = serviceOneSerializer.data["userLanguage"]
-        dbModel.save()
+        UserModel.objects.create(
+            userMail=serviceOneSerializer.data["userMail"],
+            userCountryCode=serviceOneSerializer.data["userCountryCode"],
+            userPresenterID=serviceOneSerializer.data["userPresenterID"],
+            userLanguage=serviceOneSerializer.data["userLanguage"],
+            userStatus=1)
     except:
         return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -65,30 +61,25 @@ def serviceOne(request):
 
     # CHECK USER_USERTYPE
     if serviceOneSerializer.data["userType"] == "CU":
-        customer = CustomerModel.objects.get(
-            cus_mail=serviceOneSerializer.data["userMail"])
         try:
-            customer.cus_prog = serviceOneSerializer.data["userProg"]
-            customer.save()
+            CustomerModel.objects.create(
+                cus_prog=serviceOneSerializer.data["userPresenterID"], cus_mail=serviceOneSerializer.data["userMail"])
         except:
             return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
     if serviceOneSerializer.data["userType"] == "CO":
-        company = CompanyModel.objects.get(
-            comp_mail=serviceOneSerializer.data["userMail"])  # USERPROG INSTEAD OF MAIL
         try:
-            company.comp_prog = serviceOneSerializer.data["userProg"]
-            company.save()
+            CompanyModel.objects.create(
+                comp_prog=serviceOneSerializer.data["userPresenterID"], comp_mail=serviceOneSerializer.data["userMail"])
         except:
             return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
     if serviceOneSerializer.data["userType"] == "EX":
-        expert = ExpertModel.objects.get(
-            exp_mail=serviceOneSerializer.data["userMail"])
         try:
-            expert.exp_prog = serviceOneSerializer.data["userProg"]
-            expert.save()
+            ExpertModel.objects.create(
+                exp_mail=serviceOneSerializer.data["userMail"])
         except:
             return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
-
+    serviceOneSerializer.data["userProg"] = UserModel.objects.get(
+        userMail=serviceOneSerializer.data["userMail"]).userProg
     if REG007SENDVERCODE(serviceOneSerializer.data) is False:
         return Response({"errId": 7, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -282,7 +273,6 @@ def serviceSix(request):
 #         return Response({"errId": 0, "errMessage": "Different Country!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 def REG009LOGIN(request):
     loginSerializer = LoginSerializer(data=request.data)
     dbModel = UserModel.objects.get(userProg=loginSerializer.data["userProg"])
@@ -297,12 +287,11 @@ def REG009LOGIN(request):
 
 def REG007SENDVERCODE(request):
     user = UserModel.objects.get(userMail=request["userMail"])
-    is_Active = True
     verificationCode = SendVerCodeSerializer(data=request)
     if verificationCode.is_valid() == False:
         verification = VerificationCodeModel.objects.get(
-            verUserProg=verificationCode.data["userProg"])
-        if verificationCode.data["userProg"] != user.userProg:
+            verUserProg=user.userProg)
+        if verification.verUserProg != user.userProg:
             is_Active = False
             return False
         # how to check verification code already exist
@@ -446,4 +435,3 @@ def REG008CHECKVERCODE(userData):
             verification.save()
         except:
             return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
-
