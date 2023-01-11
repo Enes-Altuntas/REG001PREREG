@@ -19,8 +19,7 @@ class ServiceTwoSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value=1, max_value=6)
     userProg = serializers.IntegerField(max_value=15)
     userMail = serializers.CharField(max_length=50)
-    userLanguage = serializers.CharField(max_length=2)
-    mailVerificationCode = serializers.CharField(max_length=16)
+    verificationCode = serializers.CharField(max_length=16)
     userFunctionType = serializers.CharField(max_length=1)
 
 

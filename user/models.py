@@ -70,10 +70,10 @@ class VerificationCodeModel(models.Model):
     verCodeType = models.CharField(max_length=1)
     verStartDate = models.DateTimeField()
     verEndDate = models.DateTimeField()
-    lastLoginerr = models.DateTimeField()
-    status = models.CharField(max_length=1)
-    cterr = models.IntegerField()
-    lasttentative = models.DateTimeField()
+    verlastLoginerr = models.DateTimeField()
+    verstatus = models.CharField(max_length=1)
+    vercterr = models.IntegerField()
+    verlasttentative = models.DateTimeField()
     verificationCode = models.CharField(max_length=6, default='000000')
 
     class Meta:

@@ -4,7 +4,7 @@ from rest_framework import status
 from .serializers import *
 from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes, CustomerModel, CompanyModel, ExpertModel, LanguageModel
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
-from datetime import datetime
+from datetime import datetime , timedelta
 
 
 @api_view(['POST'])
@@ -90,16 +90,19 @@ def serviceTwo(request):
     serviceTwoSerializer = ServiceTwoSerializer(data=request.data)
     if serviceTwoSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceTwoSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    if UserModel.objects.filter(userProg=serviceTwoSerializer.data["userProg"]).exists() and UserModel.objects.get(
+        userProg=serviceTwoSerializer.data["userProg"]) != serviceTwoSerializer.data["userProg"]:
+        return Response ({"errId": 2, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        dbModel = UserModel.objects.get(
+        user = UserModel.objects.get(
             userMail=serviceTwoSerializer.data["userMail"])
     except:
         return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
     if REG008CHECKVERCODE(serviceTwoSerializer.data) is False:
         return Response({"errId": 27, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        dbModel.userStatus = 2
-        dbModel.save()
+        user.userStatus = 2
+        user.save()
         return Response({"Success"}, status=status.HTTP_200_OK)
     except:
         return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
@@ -118,8 +121,6 @@ def serviceThree(request):
         return Response({"errId": 2, "errMessage": serviceThreeSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     try:
         dbModel.userStatus = 3
-        dbModel.name = serviceThreeSerializer.data["name"]
-        dbModel.surname = serviceThreeSerializer.data["surname"]
         dbModel.phoneNumber = serviceThreeSerializer.data["phoneNumber"]
         dbModel.phonePrefix = serviceThreeSerializer.data["phonePrefix"]
         dbModel.save()
@@ -287,19 +288,37 @@ def REG009LOGIN(request):
 
 def REG007SENDVERCODE(request):
     user = UserModel.objects.get(userMail=request["userMail"])
-    verificationCode = SendVerCodeSerializer(data=request)
-    if verificationCode.is_valid() == False:
+    verificationCode = request
+    try:
         verification = VerificationCodeModel.objects.get(
-            verUserProg=user.userProg)
-        if verification.verUserProg != user.userProg:
-            is_Active = False
+                verUserProg=user.userProg)
+    except:
+        return Response({"errId": 2, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+    if verification.verUserProg != user.userProg:
             return False
-        # how to check verification code already exist
-        # max start date?
-        if verificationCode.data["userProg"] != user.userProg and verification.verStartDate != 9999999:
-            is_Active = False
-            return False
-        # generate verification code?
+    try:
+        verStartDate = verification.verStartDate
+        verUserProg = verification.verUserProg
+    except:
+        return Response({"errId": 1, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+    if VerificationCodeModel.objects.filter(
+                verUserProg=verification.verUserProg).exists() == False or verification.status == "A":
+        #is_Active = False
+        return False
+    verification.verificationCode = verificationCode.data["userMail"]
+    try:
+        VerificationCodeModel.objects.create(
+            verUserProg=verification.verUserProg,
+            verificationCode=verificationCode.data["userMail"],
+            verStartDate=verStartDate,
+            verstatus="A",
+            verStartDate=datetime.now(),
+            verEndDate=verStartDate + timedelta(minutes=5))
+    except:
+        return Response({"errId": 1, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+    return True
+        
+    
 
 
 def REG002PSWMNG(userData):
