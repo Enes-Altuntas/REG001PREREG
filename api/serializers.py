@@ -11,7 +11,7 @@ class ServiceOneSerializer(serializers.Serializer):
     userMail = serializers.CharField(max_length=50)
     userCountryCode = serializers.CharField(max_length=2)
     userLanguage = serializers.CharField(max_length=2)
-    userPresenterID = serializers.CharField(max_length=15)
+    userPresenterID = serializers.IntegerField(max_value=15)
     userType = serializers.CharField(max_length=2)
 
 
@@ -30,7 +30,6 @@ class ServiceThreeSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=30)
     surname = serializers.CharField(max_length=30)
     phonePrefix = serializers.CharField(max_length=7)
-    userLanguage = serializers.CharField(max_length=2)
     phoneNumber = serializers.DecimalField(max_digits=20, decimal_places=2)
     userFunctionType = serializers.CharField(max_length=1)
     userType = serializers.CharField(max_length=2)
@@ -40,10 +39,8 @@ class ServiceFourSerializer(serializers.Serializer):
     callType = serializers.IntegerField(min_value=1, max_value=6)
     userProg = serializers.IntegerField(max_value=15)
     userMail = serializers.CharField(max_length=50)
-    userLanguage = serializers.CharField(max_length=2)
-    phoneVerificationCode = serializers.CharField(max_length=16)
     userFunctionType = serializers.CharField(max_length=1)
-    mailVerificationCode = serializers.CharField(max_length=16)
+    verificationCode = serializers.CharField(max_length=16)
 
 
 class ServiceFiveSerializer(serializers.Serializer):
@@ -59,7 +56,6 @@ class ServiceFiveSerializer(serializers.Serializer):
         required=False, max_length=1)
     appAcceptPrivacy = serializers.CharField(required=False, max_length=1)
     appAcceptStatistics = serializers.CharField(required=False, max_length=1)
-    userLanguage = serializers.CharField(max_length=2)
     password = serializers.CharField(max_length=16)
     userFunctionType = serializers.CharField(max_length=1)
 
@@ -88,7 +84,7 @@ class subServiceOne(serializers.Serializer):
     verCode = serializers.CharField(max_length=16)
     deltaTime = serializers.TimeField()
     userFunctionType = serializers.CharField(max_length=1)
-    mailVerificationCode = serializers.CharField(max_length=16)
+    verificationCode = serializers.CharField(max_length=16)
 
 
 class LoginSerializer(serializers.Serializer):

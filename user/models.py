@@ -1,16 +1,16 @@
 from django.db import models
 import uuid
 
+# ALL PROGS SHOULD BE PRIMARY KEY
+# USER PRESENTERID SHOULD BE CHARFIELD WITH 16 CHARACTERS
+
 class UserModel(models.Model):
 
     userMail = models.CharField(max_length=50)
     userCountryCode = models.CharField(max_length=2)
     userLanguage = models.CharField(max_length=2)
-    userPresenterID = models.IntegerField(default=0, blank=True)
+    userPresenterID = models.IntegerField(default=0, blank=True, null=True)
     userStatus = models.IntegerField(null=True, blank=True)
-    name = models.CharField(max_length=30, blank=True, null=True)
-    userName = models.CharField(max_length=3, blank=True, null=True)
-    surname = models.CharField(max_length=30, blank=True, null=True)
     phonePrefix = models.CharField(max_length=7, blank=True, null=True)
     userLanguage = models.CharField(max_length=2, blank=True, null=True)
     phoneNumber = models.DecimalField(
@@ -22,9 +22,13 @@ class UserModel(models.Model):
     promoCode = models.CharField(max_length=10, blank=True, default='N')
     userProg = models.IntegerField(
         primary_key=True, default=1, editable=False)
-    userID = models.IntegerField(default=0, blank=True, null=True)
+    userID = models.CharField(blank=True, null=True, max_length=50)
     functionType = models.CharField(max_length=1, blank=True, null=True)
     userType = models.CharField(max_length=2, blank=True, null=True)
+    user_mail2 = models.CharField(max_length=50, blank=True, null=True)
+    user_maildelegat = models.CharField(max_length=50, blank=True, null=True)
+    user_phonenumber2 = models.DecimalField(
+        max_digits=20, decimal_places=2, null=True, blank=True)
 
     class Meta:
         db_table = 'user'
@@ -99,19 +103,16 @@ class PasswordModel(models.Model):
     def __str__(self) -> str:
         return self.password
 
+# TODO: PRimary key as customer prog
+
 
 class CustomerModel(models.Model):
     cus_prog = models.IntegerField(unique=True)
     cus_name = models.CharField(max_length=30, blank=True, null=True)
     cus_mail = models.CharField(max_length=50, blank=True, null=True)
     cus_surname = models.CharField(max_length=30, blank=True, null=True)
-    cus_address1 = models.CharField(max_length=50, blank=True, null=True)
-    cus_address2 = models.CharField(max_length=50, blank=True, null=True)
-    cus_city = models.CharField(max_length=30, blank=True, null=True)
-    cus_postcode = models.CharField(max_length=30, blank=True, null=True)
+    cus_address = models.CharField(max_length=50, blank=True, null=True)
     cus_birthdate = models.DateField(blank=True, null=True)
-    cus_doctype = models.CharField(max_length=2, blank=True, null=True)
-    cus_docid = models.CharField(max_length=20, blank=True, null=True)
     cus_docimgfrontid = models.CharField(max_length=10, blank=True, null=True)
     cus_docimgackid = models.CharField(max_length=10, blank=True, null=True)
     cus_residenceproofimg = models.CharField(
@@ -120,6 +121,8 @@ class CustomerModel(models.Model):
     cus_companyprogr = models.IntegerField(blank=True, null=True)
     cus_companyrole = models.BooleanField(blank=True, null=True)
     cus_companyauthlevel = models.BooleanField(blank=True, null=True)
+    cus_nationalid = models.CharField(max_length=30, blank=True, null=True)
+    cus_docendvalidity = models.DateField(blank=True, null=True)
 
     class Meta:
         db_table = 'customer'
@@ -131,26 +134,21 @@ class CustomerModel(models.Model):
 class CompanyModel(models.Model):
     comp_prog = models.IntegerField(unique=True, auto_created=True)
     comp_mail = models.CharField(max_length=50, blank=True, null=True)
-    comp_name = models.CharField(max_length=50, blank=True, null=True)
-    comp_address1 = models.CharField(max_length=50, blank=True, null=True)
-    comp_address2 = models.CharField(max_length=50, blank=True, null=True)
-    comp_city = models.CharField(max_length=30, blank=True, null=True)
-    comp_postcode = models.CharField(max_length=30, blank=True, null=True)
+    comp_name = models.CharField(max_length=100, blank=True, null=True)
+    comp_address = models.CharField(max_length=200, blank=True, null=True)
     comp_legalrepprogr = models.IntegerField(blank=True, null=True)
     comp_legalrepname = models.CharField(max_length=30, blank=True, null=True)
     comp_legalrepsurname = models.CharField(
         max_length=30, blank=True, null=True)
     comp_legalrpcountry = models.CharField(max_length=2, blank=True, null=True)
     comp_legalrepmail = models.CharField(max_length=50, blank=True, null=True)
-    comp_legalrepdoctype = models.CharField(
-        max_length=2, blank=True, null=True)
-    comp_legalrepdocid = models.CharField(max_length=20, blank=True, null=True)
     comp_legalrepdocimgfrontid = models.CharField(
         max_length=10, blank=True, null=True)
     comp_legalrepdocimgackid = models.CharField(
         max_length=10, blank=True, null=True)
     comp_vatcode = models.CharField(max_length=30, blank=True, null=True)
     comp_sectorid = models.CharField(max_length=3,  blank=True, null=True)
+    comp_legalrepdocendvalidity = models.DateField(blank=True, null=True)
 
     class Meta:
         db_table = 'company'

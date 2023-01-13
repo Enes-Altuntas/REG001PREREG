@@ -6,6 +6,7 @@ from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel,
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime , timedelta
 
+# TODO:UPPERSTRING FOR ALL THE STRING INPUTS
 
 @api_view(['POST'])
 def mainService(request):
@@ -44,15 +45,18 @@ def serviceOne(request):
             elif dbModel.userStatus < 4:
                 return Response({"errId": 4, "errMessage": "Mail already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
+    # CHANGE AFTER THAT CAUSE WE DONT HAVE THAT YET BUT ITS GOING TO BE A DROPDOWN
     if CountryModel.objects.filter(value=serviceOneSerializer.data["userCountryCode"]).exists() == True:
-        if serviceOneSerializer.data["userPresenterId"] != UserModel.objects.get(userPresenterId=serviceOneSerializer.data["userPresenterId"]).userPresenterId:
-            return Response({"errId": 6, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"errId": 5, "errMessage": "Country code is already exist"}, status=status.HTTP_400_BAD_REQUEST)
+    if UserModel.objects.filter(userPresenterID=serviceOneSerializer.data["userPresenterID"]).exists() == True:
+        if int(serviceOneSerializer.data["userPresenterID"]) == UserModel.objects.get(userPresenterID=serviceOneSerializer.data["userPresenterID"]).userProg and UserModel.objects.get(userPresenterID=serviceOneSerializer.data["userPresenterID"]).userStatus > 4:
+            return Response({"errId": 6, "errMessage": "Presenter ID already exists"}, status=status.HTTP_400_BAD_REQUEST)
     try:
         UserModel.objects.create(
             userMail=serviceOneSerializer.data["userMail"],
             userCountryCode=serviceOneSerializer.data["userCountryCode"],
-            userPresenterID=serviceOneSerializer.data["userPresenterID"],
             userLanguage=serviceOneSerializer.data["userLanguage"],
+            userPresenterID=serviceOneSerializer.data["userPresenterID"],
             userStatus=1)
     except:
         return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
@@ -62,8 +66,8 @@ def serviceOne(request):
     # CHECK USER_USERTYPE
     if serviceOneSerializer.data["userType"] == "CU":
         try:
-            CustomerModel.objects.create(
-                cus_prog=serviceOneSerializer.data["userPresenterID"], cus_mail=serviceOneSerializer.data["userMail"])
+            CustomerModel.objects.create(cus_prog=1,
+                                         cus_mail=serviceOneSerializer.data["userMail"])
         except:
             return Response({"errId": 8, "errMessage": "DB Error"}, status=status.HTTP_400_BAD_REQUEST)
     if serviceOneSerializer.data["userType"] == "CO":
@@ -91,7 +95,7 @@ def serviceTwo(request):
     if serviceTwoSerializer.is_valid() == False:
         return Response({"errId": 2, "errMessage": serviceTwoSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     if UserModel.objects.filter(userProg=serviceTwoSerializer.data["userProg"]).exists() and UserModel.objects.get(
-        userProg=serviceTwoSerializer.data["userProg"]) != serviceTwoSerializer.data["userProg"]:
+            userProg=serviceTwoSerializer.data["userProg"]).userProg != serviceTwoSerializer.data["userProg"]:
         return Response ({"errId": 2, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
         user = UserModel.objects.get(
@@ -128,9 +132,9 @@ def serviceThree(request):
         return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
     if serviceThreeSerializer.data["userType"] == "CU":
         customer = CustomerModel.objects.get(
-            cus_mail=serviceThreeSerializer.data["userProg"])
+            cus_prog=serviceThreeSerializer.data["userProg"])
         try:
-            customer.cus_name = serviceThreeSerializer.data["name"]
+            customer.cus_name = serviceThreeSerializer.data["name"].upper()
             customer.cus_surname = serviceThreeSerializer.data["surname"]
             customer.cus_prog = serviceThreeSerializer.data["userProg"]
             customer.save()
@@ -185,9 +189,9 @@ def serviceFive(request):
         return Response({"errId": 2, "errMessage": serviceFiveSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     try:
         dbModel = UserModel.objects.get(
-            userMail=serviceFiveSerializer.data["userMail"])
+            userProg=serviceFiveSerializer.data["userProg"])
     except:
-        return Response({"errId": 9, "errMessage": "Mail not found"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"errId": 9, "errMessage": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
     dbModel_app = UserApp.objects.get()
     if dbModel_app.appID != int(serviceFiveSerializer.data["appID"]):
         return Response({"errId": 13, "errMessage": serviceFiveSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -213,21 +217,19 @@ def serviceFive(request):
 
 def serviceSix(request):
     serviceSixSerializer = ServiceSixSerializer(data=request.data)
-    dbModel = UserModel.objects.get(
-        userMail=serviceSixSerializer.data["userMail"])
     if serviceSixSerializer.is_valid() == False:
         return Response({"errId": 1, "errMessage": serviceSixSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    dbModel = UserModel.objects.get(
+        userMail=serviceSixSerializer.data["userMail"])
     if REG012CHKPROMO(serviceSixSerializer.data) is False:
         return Response({"errId": 26, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     if dbModel.userMail != serviceSixSerializer.data["userMail"]:
         return Response({"errId": 9, "errMessage": serviceSixSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        REG011IDCREATION(serviceSixSerializer.data)
-    except:
+    if REG011IDCREATION(serviceSixSerializer.data) == False:
         return Response({"errId": 16, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     try:
         dbModel.promoCode = serviceSixSerializer.data["promoCode"]
-        dbModel.userID = serviceSixSerializer.data["promoCode"]
+        dbModel.userID = str(serviceSixSerializer.data["promoCode"])
         dbModel.save()
         return Response({"Success"}, status=status.HTTP_200_OK)
     except:
@@ -302,32 +304,33 @@ def REG007SENDVERCODE(request):
     except:
         return Response({"errId": 1, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     if VerificationCodeModel.objects.filter(
-                verUserProg=verification.verUserProg).exists() == False or verification.status == "A":
+            verUserProg=verification.verUserProg).exists() == False or verification.verstatus == "C":
         #is_Active = False
         return False
-    verification.verificationCode = verificationCode.data["userMail"]
     try:
         VerificationCodeModel.objects.create(
             verUserProg=verification.verUserProg,
-            verificationCode=verificationCode.data["userMail"],
-            verStartDate=verStartDate,
+            verificationCode="AAA",
+            verStartDate=verification.verStartDate,
             verstatus="A",
-            verStartDate=datetime.now(),
-            verEndDate=verStartDate + timedelta(minutes=5))
+            verEndDate=datetime.now() + timedelta(minutes=5),
+            verlastLoginerr=verification.verlastLoginerr,
+            vercterr=1,
+            verlasttentative=datetime.now())
     except:
         return Response({"errId": 1, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
     return True
         
-    
+#vercode = random.randrange(10000, 99999)
 
 
 def REG002PSWMNG(userData):
     user = UserModel.objects.get(userProg=userData["userProg"])
     password = PasswordModel.objects.get(passwordUserProg=userData["userProg"])
-    passwordCheck = ServiceFiveSerializer(data=userData.data)
+    passwordCheck = ServiceFiveSerializer(data=userData)
     if passwordCheck.is_valid():
         if "I" == passwordCheck.data["userFunctionType"]:
-            if passwordCheck.data["userProg"] != user.data["userProg"]:
+            if passwordCheck.data["userProg"] != user["userProg"]:
                 return Response({"errId": 2, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
             if passwordCheck.data["userPassword"] != password.passwordPassword:
                 return Response({"errId": 17, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
@@ -370,7 +373,7 @@ def REG002PSWMNG(userData):
                     return Response({"errId": 8, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
         elif "V" == passwordCheck.data["userFunctionType"]:
             # check for each input type
-            if passwordCheck.data["userProg"] != user.data["userProg"] and password.passwordStartDate != password.passwordStartDate:
+            if passwordCheck.data["userProg"] != user.userProg and password.passwordStartDate != password.passwordStartDate:
                 return Response({"errId": 20, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
             if password.passwordCterr == 5 and password.passwordStatus == "L":
                 try:
@@ -380,7 +383,7 @@ def REG002PSWMNG(userData):
                     return Response({"errId": 22, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
                 except:
                     return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
-            if datetime.now().minute > password.passwordEndDate and password.passwordStatus == "E":
+            if datetime.now().minute > password.passwordEndDate.minute and password.passwordStatus == "E":
                 try:
                     password.passwordStatus = "E"
                     password.passwordLastLogin = datetime.now()
@@ -388,7 +391,7 @@ def REG002PSWMNG(userData):
                     return Response({"errId": 21, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
                 except:
                     return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
-            if passwordCheck.data["userPassword"] == password.passwordPassword:
+            if passwordCheck.data["password"] == password.passwordPassword:
                 try:
                     password.passwordCterr = password.passwordCterr + 1
                     password.passwordLastLogin = datetime.now()
@@ -408,10 +411,10 @@ def REG012CHKPROMO(userData):
 
 
 def REG011IDCREATION(userData):
-    dbModel = UserModel.objects.get()
-    dbModel.userID = userData["countryCode"] + userData["userProg"]
+    dbModel = UserModel.objects.get(userProg=userData["userProg"])
+    dbModel.userID = dbModel.userCountryCode + str(userData["userProg"])
 
-    return dbModel.userProg
+    return dbModel.userID
 
 
 def REG008CHECKVERCODE(userData):
@@ -425,32 +428,32 @@ def REG008CHECKVERCODE(userData):
         verUserProg=subService.data["userProg"])
     if subService.data["userProg"] != verification.verUserProg and verification.verStartDate != verification.verStartDate:
         return Response({"errId": 23, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
-    if subService.data["mailVerificationCode"] != verification.verificationCode:
+    if subService.data["verificationCode"] != verification.verificationCode:
         return Response({"errId": 23, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
-    if verification.cterr != 5 and verification.status == "L":
+    if verification.vercterr != 5 and verification.verstatus == "L":
         try:
-            verification.status = "L"
-            verification.lastLoginerr = datetime.now()
+            verification.verstatus = "L"
+            verification.verlastLoginerr = datetime.now()
             verification.save()
             return Response({"errId": 24, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
     if datetime.now().minute < verification.verEndDate.minute:
         try:
-            verification.status = "E"
-            verification.lastLoginerr = datetime.now()
+            verification.verstatus = "E"
+            verification.verlastLoginerr = datetime.now()
             verification.save()
             # return Response({"errId": 25, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
-    verification.status = "A"
-    if verification.status == "E":
+    verification.verstatus = "A"
+    if verification.verstatus == "E":
         return Response({"errId": 25, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
-    if verification.status == "L":
+    if verification.verstatus == "L":
         return Response({"errId": 23, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
-    if verification.status == "A":
+    if verification.verstatus == "A":
         try:
-            verification.lasttentative = datetime.now()
+            verification.verlasttentative = datetime.now()
             verification.save()
         except:
             return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
