@@ -23,8 +23,7 @@ class UserModel(models.Model):
     acceptPrivacy = models.CharField(max_length=1, blank=True, default='N')
     acceptStatistics = models.CharField(max_length=1, blank=True, default='N')
     promoCode = models.CharField(max_length=10, blank=True, default='N')
-    userProg = models.IntegerField(
-        primary_key=True, default=1, editable=False)
+    userProg = models.AutoField(primary_key=True)
     userID = models.CharField(blank=True, null=True, max_length=50)
     functionType = models.CharField(max_length=1, blank=True, null=True)
     userType = models.CharField(max_length=2, blank=True, null=True)
@@ -292,6 +291,15 @@ class QRCodeModel(models.Model):
         self.qr_code.save(fname, File(buffer), save=False)
         canvas.close()
         super().save(*args, **kwargs)
+
+
+class ChangePhone(models.Model):
+    phone_userprogr = models.IntegerField(default=0, blank=True, null=True)
+    phone_status = models.CharField(
+        max_length=20, choices=[('list of value', 'list of value')])
+    phone_number = models.DecimalField(max_digits=20, decimal_places=0)
+    phone_endverification = models.DateTimeField(blank=True, null=True)
+    phone_endvalidity = models.DateTimeField(blank=True, null=True)
 
 
 

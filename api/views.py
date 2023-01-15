@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import *
-from user.models import UserModel, CountryModel, UserApp, VerificationCodeModel, PasswordModel, errorCodes, CustomerModel, CompanyModel, ExpertModel, LanguageModel
+from user.models import *
 from user.serializers import CountryCodeSerializer, UserSerializer, UserAppSerializer
 from datetime import datetime , timedelta
 
@@ -455,5 +455,52 @@ def REG008CHECKVERCODE(userData):
         try:
             verification.verlasttentative = datetime.now()
             verification.save()
+        except:
+            return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def REG004PHONEVERIFY(request):
+    if request.data["phone_callType"] == 1:
+        phoneSerializer = PhoneSerializer(data=request.data)
+        if phoneSerializer.is_valid() == False:
+            return Response({"errId": 2, "errMessage": phoneSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        if UserModel.objects.filter(userProg=phoneSerializer.data["phone_userProg"]).exists() == False:
+            return Response({"errId": 3, "errMessage": "Invalid_progr"}, status=status.HTTP_400_BAD_REQUEST)
+        userProg = UserModel.objects.get(
+            userProg=phoneSerializer.data["phone_userProg"]).userProg
+        try:
+            ChangePhone.objects.create(
+                phone_userProg=userProg,
+                phone_number=phoneSerializer.data["phone_phone"],
+                phone_status=1,
+                phone_endverification=datetime.now() + timedelta(minutes=5))
+        except:
+            return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+        if REG007SENDVERCODE(phoneSerializer.data) == True:
+            return Response({"errId": 0, "errMessage": "Success"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"errId": 1, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+    if request.data["phone_callType"] == 2:
+        phoneSerializerVerify = PhoneSerializerVerify(data=request.data)
+        if phoneSerializerVerify.is_valid() == False:
+            return Response({"errId": 2, "errMessage": phoneSerializerVerify.errors}, status=status.HTTP_400_BAD_REQUEST)
+        if UserModel.objects.filter(userProg=phoneSerializerVerify.data["phone_userProg"]).exists() == False:
+            return Response({"errId": 3, "errMessage": "Invalid_progr"}, status=status.HTTP_400_BAD_REQUEST)
+        if REG008CHECKVERCODE(phoneSerializerVerify.data) == False:
+            return Response({"errId": 4, "errMessage": "GEN001ERR"}, status=status.HTTP_400_BAD_REQUEST)
+        changePhone = ChangePhone.objects.get(
+            userProg=phoneSerializerVerify.data["phone_userProg"])
+        user = UserModel.objects.get(userProg=changePhone.phone_userProg)
+        try:
+            changePhone.phone_status = 2
+            changePhone.phone_number = user.phoneNumber
+            changePhone.phone_endvalidity = datetime.now()
+            changePhone.phone_endverification = "0000-00-00 00:00:00"
+        except:
+            return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user.phoneNumber = phoneSerializerVerify.data["phone_userPhone"]
+            user.save()
         except:
             return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)

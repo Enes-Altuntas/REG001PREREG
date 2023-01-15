@@ -98,3 +98,16 @@ class SendVerCodeSerializer(serializers.Serializer):
     userProg = serializers.IntegerField(max_value=15)
     userMail = serializers.CharField(max_length=50)
     userPhone = serializers.CharField(max_length=20)
+
+
+class PhoneSerializerVerify(serializers.Serializer):
+    phone_userProg = serializers.IntegerField(max_value=15)
+    phone_userPhone = serializers.CharField(max_length=20)
+    phone_verificationCode = serializers.CharField(max_length=16)
+    phone_callType = serializers.CharField(max_length=1)
+
+
+class PhoneSerializer(serializers.Serializer):
+    phone_userProg = serializers.IntegerField(max_value=15)
+    phone_userPhone = serializers.CharField(max_length=20)
+    phone_callType = serializers.CharField(max_length=1)
