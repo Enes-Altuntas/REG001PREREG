@@ -459,6 +459,71 @@ def REG008CHECKVERCODE(userData):
             return Response({"errId": 10, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+def REG004REGCUS(request):
+    regCustomer = RegCustomerSerializer(data=request.data)
+    if regCustomer.is_valid() == False:
+        return Response({"errId": 1, "errMessage": regCustomer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    if UserModel.objects.filter(userProg=regCustomer.data["userProg"]).exists() == False:
+        return Response({"errId": 2, "errMessage": "Invalid user"}, status=status.HTTP_400_BAD_REQUEST)
+    if UserModel.objects.filter(userProg=regCustomer.data["userProg"]).userType != "CU":
+        return Response({"errId": 3, "errMessage": "Invalid user type"}, status=status.HTTP_400_BAD_REQUEST)
+    if CustomerModel.objects.filter(customerUserProg=regCustomer.data["userProg"]).exists() == False:
+        return Response({"errId": 4, "errMessage": "Invalid customer prog"}, status=status.HTTP_400_BAD_REQUEST)
+    user = UserModel.objects.get(userProg=regCustomer.data["userProg"])
+    customer = CustomerModel.objects.get(
+        customerUserProg=regCustomer.data["userProg"])
+    return Response(user, customer, status=status.HTTP_200_OK)
+
+
+def REG004REGCUSSUR(request):
+    regCustomerSurnameSerializer = RegCustomerSurnameSerializer(
+        data=request.data)
+    if regCustomerSurnameSerializer.is_valid() == False:
+        return Response({"errId": 1, "errMessage": regCustomerSurnameSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    if CustomerModel.objects.filter(cus_prog=regCustomerSurnameSerializer.data["userProg"]).exists() == False:
+        return Response({"errId": 2, "errMessage": "Invalid customer prog"}, status=status.HTTP_400_BAD_REQUEST)
+    customer = CustomerModel.objects.get(
+        cus_prog=regCustomerSurnameSerializer.data["userProg"])
+    try:
+        customer.cus_surname = regCustomerSurnameSerializer.data["cus_surname"]
+        customer.save()
+    except:
+        return Response({"errId": 3, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+def REG004REGCUSNAME(request):
+    regCustomerNameSerializer = RegCustomerNameSerializer(data=request.data)
+    if regCustomerNameSerializer.is_valid() == False:
+        return Response({"errId": 1, "errMessage": regCustomerNameSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    if CustomerModel.objects.filter(cus_prog=regCustomerNameSerializer.data["userProg"]).exists() == False:
+        return Response({"errId": 2, "errMessage": "Invalid customer prog"}, status=status.HTTP_400_BAD_REQUEST)
+    customer = CustomerModel.objects.get(
+        cus_prog=regCustomerNameSerializer.data["userProg"])
+    try:
+        customer.cus_name = regCustomerNameSerializer.data["cus_name"]
+        customer.save()
+    except:
+        return Response({"errId": 3, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+def REG004REGCUSBDATE(request):
+    regCustomerBdateSerializer = RegCustomerBdateSerializer(
+        data=request.data)
+    if regCustomerBdateSerializer.is_valid() == False:
+        return Response({"errId": 1, "errMessage": regCustomerBdateSerializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    if CustomerModel.objects.filter(cus_prog=regCustomerBdateSerializer.data["userProg"]).exists() == False:
+        return Response({"errId": 2, "errMessage": "Invalid customer prog"}, status=status.HTTP_400_BAD_REQUEST)
+    customer = CustomerModel.objects.get(
+        cus_prog=regCustomerBdateSerializer.data["userProg"])
+    try:
+        customer.cus_birthdate = regCustomerBdateSerializer.data["bdate"]
+        customer.save()
+    except:
+        return Response({"errId": 3, "errMessage": "Database error"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
 @api_view(['POST'])
 def REG004PHONEVERIFY(request):
     if request.data["phone_callType"] == 1:

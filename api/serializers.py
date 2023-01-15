@@ -111,3 +111,22 @@ class PhoneSerializer(serializers.Serializer):
     phone_userProg = serializers.IntegerField(max_value=15)
     phone_userPhone = serializers.CharField(max_length=20)
     phone_callType = serializers.CharField(max_length=1)
+
+
+class RegCustomerSerializer(serializers.Serializer):
+    userProg = serializers.IntegerField(max_value=15)
+
+
+class RegCustomerSurnameSerializer(serializers.Serializer):
+    userProg = serializers.IntegerField(max_value=15)
+    surname = serializers.CharField(max_length=30)
+
+
+class RegCustomerNameSerializer(serializers.Serializer):
+    userProg = serializers.IntegerField(max_value=15)
+    name = serializers.CharField(max_length=30)
+
+
+class RegCustomerBdateSerializer(serializers.Serializer):
+    userProg = serializers.IntegerField(max_value=15)
+    bdate = serializers.DateField()
