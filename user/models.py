@@ -9,29 +9,33 @@ from PIL import Image, ImageDraw
 
 class UserModel(models.Model):
 
-    userMail = models.CharField(max_length=50)
-    userCountryCode = models.CharField(max_length=2)
-    userLanguage = models.CharField(max_length=2)
-    userPresenterID = models.IntegerField(default=0, blank=True, null=True)
-    userStatus = models.IntegerField(null=True, blank=True)
-    phonePrefix = models.CharField(max_length=7, blank=True, null=True)
-    userLanguage = models.CharField(max_length=2, blank=True, null=True)
-    phoneNumber = models.DecimalField(
+    user_Mail = models.CharField(max_length=50, unique=True)
+    user_CountryCode = models.CharField(max_length=2)
+    user_Language = models.CharField(max_length=2)
+    user_PresenterID = models.IntegerField(
+        default=0, blank=True, null=True)
+    user_Status = models.IntegerField(null=True, blank=True)
+    user_phonePrefix = models.CharField(max_length=7, blank=True, null=True)
+    user_Language = models.CharField(max_length=2, blank=True, null=True)
+    user_phoneNumber = models.DecimalField(
         max_digits=20, decimal_places=2, null=True, blank=True)
-    acceptTermsCondition = models.CharField(
+    user_acceptTermsCondition = models.CharField(
         max_length=1, blank=True, default='N')
-    acceptPrivacy = models.CharField(max_length=1, blank=True, default='N')
-    acceptStatistics = models.CharField(max_length=1, blank=True, default='N')
-    promoCode = models.CharField(max_length=10, blank=True, default='N')
-    userProg = models.AutoField(primary_key=True)
-    userID = models.CharField(blank=True, null=True, max_length=50)
-    functionType = models.CharField(max_length=1, blank=True, null=True)
-    userType = models.CharField(max_length=2, blank=True, null=True)
+    user_acceptPrivacy = models.CharField(
+        max_length=1, blank=True, default='N')
+    user_acceptStatistics = models.CharField(
+        max_length=1, blank=True, default='N')
+    user_promoCode = models.CharField(max_length=10, blank=True, default='N')
+    user_Prog = models.AutoField(primary_key=True)
+    user_ID = models.CharField(
+        blank=True, null=True, max_length=50, unique=True)
+    user_functionType = models.CharField(max_length=1, blank=True, null=True)
+    user_Type = models.CharField(max_length=2, blank=True, null=True)
     user_mail2 = models.CharField(max_length=50, blank=True, null=True)
-    user_maildelegat = models.CharField(max_length=50, blank=True, null=True)
+    user_maildelegat = models.CharField(
+        max_length=50, blank=True, null=True)
     user_phonenumber2 = models.DecimalField(
         max_digits=20, decimal_places=2, null=True, blank=True)
-
     class Meta:
         db_table = 'user'
 
